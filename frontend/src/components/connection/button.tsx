@@ -52,7 +52,7 @@ const ConnectionBtn = () => {
 
             <ConnectionInfo show={show} close={close} />
 
-            <WalletOptions show={showOptions} address={address} close={closeOptions} />
+            <WalletOptions close={closeOptions} />
 
         </div>
     )

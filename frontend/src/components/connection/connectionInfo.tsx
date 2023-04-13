@@ -4,9 +4,14 @@ import { toast } from 'react-toastify'
 import { MdContentCopy } from "react-icons/md"
 import { networkNameByChainId } from '@/libs/utils';
 
+interface IProps {
+    show: boolean
+    close: () => void
+}
 
+const ConnectionInfo = (props: IProps) => {
 
-const ConnectionInfo = ({show, close}) => {
+    const { show, close } = props
 
     const { address } = useAccount()
 
@@ -15,7 +20,7 @@ const ConnectionInfo = ({show, close}) => {
     const { disconnect } = useDisconnect()
     
     const copyAddress = () => {
-        navigator.clipboard.writeText(address)
+        navigator.clipboard.writeText(address as string)
         toast.success("Address copied to clipboard")
     }
 
@@ -30,7 +35,7 @@ const ConnectionInfo = ({show, close}) => {
 
                 <div className='p-4'>
 
-                    <p>Network: {networkNameByChainId(chain?.id)}</p>
+                    <p>Network: {networkNameByChainId(chain?.id as number)}</p>
             
                     <div className='flex justify-between my-2'> 
 

@@ -5,9 +5,7 @@ import { CHAIN_ID } from '@/libs/enums'
 import { useState } from 'react'
 
 
-export default function Home() {
-
-  const [error, setError] = useState<string | null>(null)
+export default function Pools() {
 
   const [valueFrom, setValueFrom] = useState("")
   const [valueTo, setValueTo] = useState("")
@@ -34,8 +32,8 @@ export default function Home() {
 
             <TokenSelector value={valueTo} chainId={chainIdTo} setValue={setValueTo} setChainId={setChainIdTo} />
 
-            <button className={`${error ?  'bg-gray-200' : 'bg-green-600 hover:bg-green-700 text-white' } rounded-2xl px-2 h-10 md:h-16 mt-2 w-full`}>
-              SWAP
+            <button className='bg-gray-200 rounded-2xl px-2 h-10 md:h-16 mt-2 w-full'>
+
             </button>
 
           </div>

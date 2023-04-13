@@ -2,14 +2,13 @@ import {  useConnect, useAccount } from 'wagmi'
 import Wallet from './wallet'
 
 interface IProps {
-    show: boolean
     close: () => void
 }
 
 
 const WalletOptions = (props: IProps) => {
 
-    const {show, close} = props
+    const {close} = props
 
     const { isConnected } = useAccount()
 

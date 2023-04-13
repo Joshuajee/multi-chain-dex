@@ -1,11 +1,14 @@
 import Image from 'next/image';
-import { useConnect } from 'wagmi'
-import { toast } from 'react-toastify'
+import { Connector, useConnect } from 'wagmi'
 import { SUPPORTED_WALLETS } from '@/libs/types';
 
+interface IProps {
+    connector: Connector;
+}
 
+const Wallet = (props: IProps) => {
 
-const Wallet = ({connector}) => {
+    const { connector } = props
 
     const { connect, error  } = useConnect()
 
@@ -26,7 +29,7 @@ const Wallet = ({connector}) => {
         <button 
             className='flex flex-col rounded-lg w-full h-24 md:h-auto aspect-video shadow-lg items-center justify-center'
             onClick={() => connect({ connector })}>
-            {icon(connector.id)}
+            {icon(connector?.id as SUPPORTED_WALLETS)}
             <p> {connector.name} </p>
         </button>
     )

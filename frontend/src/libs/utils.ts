@@ -1,6 +1,8 @@
 import { ethers } from "ethers"
 import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
+import { CHAIN_ID } from "./enums"
+import { SUPPORTED_NETWORKS } from "./interfaces"
 
 export const dollarFormat = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -58,6 +60,12 @@ export const convertToWEI = (amount: number) => {
     return Number(amount) <= 0 ? 0 : ethers.utils.parseUnits(String(amount), 'ether')
 }
 
+export const  removeDecimal = (price: number, dicimal: number) => {
+    if (!price) return 0
+
+    return (ethers.utils.formatUnits(price.toString(), dicimal)).toString()
+}
+
 
 export const dateToTimeStamp = (date: Date) => {
     return new Date(date).getTime() / 1000
@@ -67,3 +75,23 @@ export const isAddressZero = (address: Address) => {
     if (address === "0x0000000000000000000000000000000000000000") return true
     return false
 }
+
+
+export const supportedNetworks : SUPPORTED_NETWORKS [] = [
+    {
+        name: "Mumbai",
+        chainId: CHAIN_ID.MUMBAI,
+        icon: ""
+    },
+    {
+        name: "Goerli",
+        chainId: CHAIN_ID.GOERLI,
+        icon: ""
+    },
+    {
+        name: "BNB Testnet",
+        chainId: CHAIN_ID.BNB_TEST,
+        icon: ""
+    }
+
+]

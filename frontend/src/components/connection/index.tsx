@@ -1,4 +1,4 @@
-import { useAccount } from 'wagmi'
+import { Address, useAccount } from 'wagmi'
 import truncAddress from 'truncate-eth-address'
 import { AiOutlineWallet } from 'react-icons/ai'
 import  { RxCaretDown } from 'react-icons/rx'
@@ -52,11 +52,11 @@ const Connection = () => {
             }
 
             {
-                <ConnectionInfo show={show} address={address} close={close} />
+                <ConnectionInfo show={show} close={close} />
             }
 
             <ModalWrapper title={"Choose Wallet"} open={showOptions} handleClose={closeOptions}>
-                <WalletOptions show={showOptions} close={closeOptions}/>
+                <WalletOptions close={closeOptions}/>
             </ModalWrapper>
 
         </div>

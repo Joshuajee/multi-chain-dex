@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { useScroll } from "@/hooks/windows"
-import { ROUTES } from "@/libs/constants"
+import { ROUTES } from "@/libs/enums"
 import Connection from "@/components/connection"
 
 const navs = [
@@ -16,7 +16,7 @@ const Navbar = () => {
     const trigger = scrollPosition > 80
 
     return (
-        <nav className={`${trigger && "shadow-lg backdrop-blur-xl bg-[#09192F]/50 z-10"} fixed w-full flex justify-between py-4 px-10`}>
+        <nav className={`${trigger && "shadow-lg backdrop-blur-xl bg-blue/50 z-10"} fixed w-full flex justify-between py-4 px-10`}>
 
             <div className="text">Logo</div>
 

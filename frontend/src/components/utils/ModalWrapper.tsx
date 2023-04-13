@@ -12,7 +12,7 @@ const ModalWrapper = (props: IProps) => {
 
     const { title, open, handleClose, children } = props
 
-    if (!open) return
+    if (!open) return <></>
 
     return (
         <div className="fixed top-0 left-0 h-screen w-screen">

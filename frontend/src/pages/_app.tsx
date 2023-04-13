@@ -1,7 +1,7 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import { WagmiConfig, createClient, configureChains } from 'wagmi'
-import { polygonMumbai } from 'wagmi/chains'
+import { WagmiConfig, createClient, configureChains, goerli } from 'wagmi'
+import { bscTestnet, polygonMumbai } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
@@ -15,7 +15,7 @@ import 'aos/dist/aos.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [polygonMumbai],
+  [polygonMumbai, goerli, bscTestnet],
   [alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}), publicProvider()],
 )
 
@@ -40,7 +40,8 @@ const client = createClient({
     new WalletConnectConnector({
       chains,
       options: {
-        qrcode: true,
+        //qrcode: true,
+        projectId: "Project X"
       },
     }),
   ],
