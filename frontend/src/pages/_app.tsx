@@ -1,0 +1,63 @@
+import '@/styles/globals.css'
+import type { AppProps } from 'next/app'
+import { WagmiConfig, createClient, configureChains } from 'wagmi'
+import { polygonMumbai } from 'wagmi/chains'
+import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { publicProvider } from 'wagmi/providers/public'
+import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
+import { InjectedConnector } from 'wagmi/connectors/injected'
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+import { useEffect } from 'react'
+import { ToastContainer } from 'react-toastify';
+import Router from 'next/router';
+import AOS from 'aos'
+import 'aos/dist/aos.css';
+import 'react-toastify/dist/ReactToastify.css';
+
+const { chains, provider, webSocketProvider } = configureChains(
+  [polygonMumbai],
+  [alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}), publicProvider()],
+)
+
+ 
+const client = createClient({
+  autoConnect: true,
+  connectors: [
+    new InjectedConnector({
+      chains,
+      options: {
+        name: 'Metamask',
+        shimDisconnect: true,
+      },
+    }),
+    // new MetaMaskConnector({ chains }),
+    new CoinbaseWalletConnector({
+      chains,
+      options: {
+        appName: 'Project X',
+      },
+    }),
+    new WalletConnectConnector({
+      chains,
+      options: {
+        qrcode: true,
+      },
+    }),
+  ],
+  provider,
+  webSocketProvider,
+})
+
+export default function App({ Component, pageProps }: AppProps) {
+
+  useEffect(() => {
+    AOS.init({ duration: 500 });
+  }, []);
+
+  return (
+    <WagmiConfig client={client}>
+      <Component {...pageProps} />
+      <ToastContainer autoClose={3000} hideProgressBar={true} position="bottom-right" />
+    </WagmiConfig> 
+  )
+}
