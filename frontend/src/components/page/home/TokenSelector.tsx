@@ -14,7 +14,7 @@ interface IProps {
 
 const TokenSelector = (props: IProps) => {
 
-    const { address } = useAccount()
+    const { address, isConnected } = useAccount()
 
     const { data, isLoading } = useBalance({
         address: address,
@@ -50,7 +50,9 @@ const TokenSelector = (props: IProps) => {
 
                 </select>
 
-                <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
+                { 
+                    isConnected && <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
+                }
 
             </div>
 
