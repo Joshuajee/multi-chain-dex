@@ -1,7 +1,8 @@
 export enum ROUTES {
     SWAP = "/",
     TOKENS = "/tokens",
-    POOLS = "/pools"
+    POOLS = "/pools",
+    NEW_POSITION = "/pools/new-position"
 }
 
 export enum CHAIN_ID {
