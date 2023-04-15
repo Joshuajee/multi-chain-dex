@@ -1,4 +1,4 @@
-import TokenSelector from '@/components/page/home/TokenSelector'
+import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
 import { CHAIN_ID } from '@/libs/enums'
@@ -12,8 +12,8 @@ export default function Home() {
   const [valueFrom, setValueFrom] = useState("")
   const [valueTo, setValueTo] = useState("")
 
-  const [chainIdFrom, setChainIdFrom] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
-  const [chainIdTo, setChainIdTo] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
+  const [chainIdFrom, setChainIdFrom] = useState<number | string>(0)
+  const [chainIdTo, setChainIdTo] = useState<number| string>(0)
 
 
   return (
@@ -30,9 +30,9 @@ export default function Home() {
 
             <h1>Swap</h1>
 
-            <TokenSelector value={valueFrom} chainId={chainIdFrom} setValue={setValueFrom} setChainId={setChainIdFrom}  />
+            <TokenSelector selectable={true} value={valueFrom} chainIndex={chainIdFrom} setValue={setValueFrom} setChainIndex={setChainIdFrom}  />
 
-            <TokenSelector value={valueTo} chainId={chainIdTo} setValue={setValueTo} setChainId={setChainIdTo} />
+            <TokenSelector selectable={true} value={valueTo} chainIndex={chainIdTo} setValue={setValueTo} setChainIndex={setChainIdTo} />
 
             <button className={`${error ?  'bg-gray-200' : 'bg-green-600 hover:bg-green-700 text-white' } rounded-2xl px-2 h-10 md:h-16 mt-2 w-full`}>
               SWAP

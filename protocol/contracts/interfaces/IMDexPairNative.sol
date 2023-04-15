@@ -2,7 +2,8 @@
 pragma solidity 0.8.19;
 
 interface IMDexPairNative {
-    function initialize(uint8 _chain1, uint8 _chain2) external;
-    function skim(address to) external;
-    function sync() external;
+    event ReceivedMessage(uint32 indexed _origin, address indexed _sender, bytes _body);
+    function initialize(address _mailbox, address _interchainGasPaymaster, address _interchainSecurityModule) external;
+    // function skim(address to) external;
+    // function sync() external;
 }

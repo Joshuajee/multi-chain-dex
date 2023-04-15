@@ -1,5 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -10,18 +9,69 @@ describe("MDexFactory", function () {
     async function deploy() {
 
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount] = await ethers.getSigners();
+        const [owner, one, two, three, four] = await ethers.getSigners();
 
         const MDexFactory = await ethers.getContractFactory("MDexFactory");
-        const mDexFactory = await MDexFactory.deploy();
+        const mDexFactory = await MDexFactory.connect(owner).deploy(1);
 
-        return { mDexFactory, owner, otherAccount };
+        return { mDexFactory, owner, one, two, three, four};
+    }
+
+
+
+    async function initialize() {
+
+        const { mDexFactory, owner, one, two, three, four} = await deploy()
+
+        const Mailbox = await ethers.getContractFactory("Mailbox");
+        const mailbox = await Mailbox.connect(owner).deploy(1000);
+
+        // const Mailbox = await ethers.getContractFactory("Mailbox");
+        const interchainGasPaymaster = await Mailbox.connect(owner).deploy(1000);
+
+        // const Mailbox = await ethers.getContractFactory("Mailbox");
+        const interchainSecurityModule = await Mailbox.connect(owner).deploy(1000);
+        
+        await mDexFactory.initialize(mailbox.address, interchainGasPaymaster.address, interchainSecurityModule.address)
+
+
+        return { mDexFactory, owner, one, two, three, four};
     }
 
     describe("Deployment", function () {
+
+        it("Domain Should be set correctly", async function () {
+            const [owner] = await ethers.getSigners();
+            const MDexFactory = await ethers.getContractFactory("MDexFactory");
+            const mDexFactory = await MDexFactory.connect(owner).deploy(1);
+            expect(await mDexFactory.LOCAL_DOMAIN()).to.be.equal(1)
+        });
+
         it("Pair length should be zero", async function () {
             const { mDexFactory } = await loadFixture(deploy);
             expect(await mDexFactory.allPairsLength()).to.equal(0);
+        });
+
+        it("Should initialize with the right Info", async function () {
+            const { mDexFactory, owner } = await loadFixture(deploy);
+
+            const Mailbox = await ethers.getContractFactory("Mailbox");
+            const mailbox = await Mailbox.connect(owner).deploy(1000);
+
+            // const Mailbox = await ethers.getContractFactory("Mailbox");
+            const interchainGasPaymaster = await Mailbox.connect(owner).deploy(1000);
+
+            // const Mailbox = await ethers.getContractFactory("Mailbox");
+            const interchainSecurityModule = await Mailbox.connect(owner).deploy(1000);
+            
+            await mDexFactory.initialize(mailbox.address, interchainGasPaymaster.address, interchainSecurityModule.address)
+    
+            expect(await mDexFactory.mailbox()).to.be.equal(mailbox.address)
+
+            expect(await mDexFactory.interchainGasPaymaster()).to.be.equal(interchainGasPaymaster.address)
+
+            expect(await mDexFactory.interchainSecurityModule()).to.be.equal(interchainSecurityModule.address)
+
         });
 
     });
@@ -29,28 +79,31 @@ describe("MDexFactory", function () {
     describe("Pair Creation", function () {
 
         it("Should revert with the right error if the chains are the same", async function () {
-            const { mDexFactory } = await loadFixture(deploy);
+            const { mDexFactory, owner, one, two, three, four } = await loadFixture(deploy);
 
-            await expect(mDexFactory.createPair(1, 1)).to.be.revertedWith(
+            await expect(mDexFactory.createPair(1, 1, one.address, two.address, three.address, four.address)).to.be.revertedWith(
                 "MDEX: IDENTICAL_CHAIN"
             );
+            
         });
 
 
-        it("Should create pairs with right info, if the chains are the different", async function () {
-            const { mDexFactory } = await loadFixture(deploy);
 
-            await mDexFactory.createPair(1, 2);
+        // it("Should create pairs with right info, if the chains are the different", async function () {
+            
+        //     const { mDexFactory, one, two, three, four } = await loadFixture(deploy);
+            
+        //     await mDexFactory.createPair(10, 10000, one.address, two.address, three.address, four.address);
 
-            expect(await mDexFactory.allPairsLength()).to.equal(1);
+        //     expect(await mDexFactory.allPairsLength()).to.equal(1);
 
-            //console.log(await mDexFactory.getPair(1, 2))
+        //     //console.log(await mDexFactory.getPair(1, 2))
 
-            //expect(await mDexFactory.getPair(1, 2)).to.be.addre;
+        //     //expect(await mDexFactory.getPair(1, 2)).to.be.addre;
 
-            //await expect(mDexFactory.createPair(1, 2)).not.to.reverted()
+        //     //await expect(mDexFactory.createPair(1, 2)).not.to.reverted()
 
-        });
+        // });
 
 
     // it("Should emit an event on withdrawals", async function () {

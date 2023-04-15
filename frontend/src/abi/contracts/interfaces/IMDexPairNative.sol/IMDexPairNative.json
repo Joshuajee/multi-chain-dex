@@ -1,38 +1,48 @@
 [
   {
+    "anonymous": false,
     "inputs": [
       {
-        "internalType": "uint8",
-        "name": "_chain1",
-        "type": "uint8"
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "_origin",
+        "type": "uint32"
       },
       {
-        "internalType": "uint8",
-        "name": "_chain2",
-        "type": "uint8"
+        "indexed": true,
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_body",
+        "type": "bytes"
       }
     ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "name": "ReceivedMessage",
+    "type": "event"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
+        "name": "_mailbox",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_interchainGasPaymaster",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_interchainSecurityModule",
         "type": "address"
       }
     ],
-    "name": "skim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "sync",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -3,30 +3,35 @@ import { useAccount, useBalance } from 'wagmi'
 import { SUPPORTED_NETWORKS } from "@/libs/interfaces";
 import { supportedNetworks } from "@/libs/utils";
 import { CHAIN_ID } from "@/libs/enums";
+import SelectToken from "./SelectToken";
 
 
 interface IProps {
     value: number | string;
-    setValue: (value: string) => void;
-    chainId: number  | CHAIN_ID | string;
-    setChainId: (value: number | CHAIN_ID | string) => void;
+    setValue?: (value: string) => void;
+    chainIndex: number  | string;
+    setChainIndex?: (value: number | string) => void;
+    selectable: boolean;
 }
 
 const TokenSelector = (props: IProps) => {
+
+
+    const chain = supportedNetworks[Number(props?.chainIndex)]
 
     const { address, isConnected } = useAccount()
 
     const { data, isLoading } = useBalance({
         address: address,
-        chainId: Number(props?.chainId),
+        chainId: chain?.chainId,
     })
 
     const handleChangeEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
-        props.setValue(e.target.value)
+        props?.setValue?.(e.target.value)
     }
 
     const handleSelectEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        props.setChainId(e.target.value)
+        props?.setChainIndex?.(e.target.value)
     }
 
     return (
@@ -38,17 +43,16 @@ const TokenSelector = (props: IProps) => {
 
             <div className="flex flex-col  items-end">
 
-                <select className="min-w-48 outline-none" onChange={handleSelectEvent}>
-
-                    { 
-                        supportedNetworks.map((network: SUPPORTED_NETWORKS, index: number) => {
-                            return (
-                                <option value={network.chainId} key={index} className="min-w-48"> {network.name} </option>
-                            )
-                        }) 
-                    }
-
-                </select>
+                {
+                    props.selectable ?
+                        (<SelectToken chainIndex={0} handleSelectEvent={handleSelectEvent} />)
+                            :
+                        (
+                            <p className="min-w-[120px] cursor-pointer text-center py-2 w-full bg-gray-400 h-10 rounded-lg outline-none">
+                                {   chain?.name  }
+                            </p>
+                        )
+                }
 
                 { 
                     isConnected && <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
