@@ -8,19 +8,10 @@ import './interfaces/IMDexPairNative.sol';
 
 
 
-contract MDexPairNative is  HyperlaneConnectionClient, IInterchainGasPaymaster,  IMDexPairNative {
+contract MDexPairNative is  HyperlaneConnectionClient, IMDexPairNative {
 
     //Events
-    event Mint(address indexed sender, uint amount1, uint amount2);
-    event Burn(address indexed sender, uint amount1, uint amount2, address indexed to);
-    event Swap(
-        address indexed sender,
-        uint amount1In,
-        uint amount2In,
-        uint amountIn,
-        uint amountOut,
-        address indexed to
-    );
+    event Swap(address indexed to, uint amountIn, uint amountOut);
     event Sync(uint reserve1, uint reserve2);
 
     //Liberies
@@ -98,99 +89,74 @@ contract MDexPairNative is  HyperlaneConnectionClient, IInterchainGasPaymaster, 
     //     emit Sync(reserve1, reserve2);
     // }
 
-    // this low-level function should be called from a contract which performs important safety checks
-    function swapCore(uint amountIn, uint amountOut, address to) external lock {
-        if (amountIn < 0 || amountOut < 0) revert('MDEX: INSUFFICIENT_OUTPUT_AMOUNT');
-        (uint _reserve1, uint _reserve2,) = getReserves(); // gas savings
-   
-        if (amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
-
-        uint balance1;
-        uint balance2;
-        { // scope for _token{0,1}, avoids stack too deep errors
-
-            //require(to != _LOCAL_DOMAIN && to != _REMOTE_DOMAIN, 'MDEX: INVALID_TO');
-            // if (amountIn > 0) _safeTransfer(_LOCAL_DOMAIN, to, amountIn); // optimistically transfer tokens
-            // if (amountOut > 0) _safeTransfer(_REMOTE_DOMAIN, to, amountOut); // optimistically transfer tokens
-            // if (data.length > 0) MDexCallee(to).MDexCall(msg.sender, amountIn, amountOut, data);
-            // balance1 = IERC20(_LOCAL_DOMAIN).balanceOf(address(this));
-            // balance2 = IERC20(_REMOTE_DOMAIN).balanceOf(address(this));
-        }
-        // uint amount1In = balance1 > _reserve1 - amountIn ? balance1 - (_reserve1 - amountIn) : 0;
-        // uint amount2In = balance2 > _reserve2 - amountOut ? balance2 - (_reserve2 - amountOut) : 0;
-        // require(amount1In > 0 || amount2In > 0, 'MDEX: INSUFFICIENT_INPUT_AMOUNT');
-        // { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-        // uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
-        // uint balance2Adjusted = balance2.mul(1000).sub(amount2In.mul(3));
-        // require(balance1Adjusted.mul(balance2Adjusted) >= uint(_reserve1).mul(_reserve2).mul(1000**2), 'MDEX: K');
-        // }
-
-        //_update(balance1, balance2, _reserve1, _reserve2);
-        //emit Swap(msg.sender, amount1In, amount2In, amountIn, amountOut, to);
+    function addLiquidityCore(uint amountIn, address from) internal lock returns (uint amountOut) {
 
 
     }
 
-    // this low-level function should be called from a contract which performs important safety checks
-    function swapReceiver(uint amountIn, uint amountOut, address to) external lock {
-        if (amountIn < 0 || amountOut < 0) revert('MDEX: INSUFFICIENT_OUTPUT_AMOUNT');
-        (uint _reserve1, uint _reserve2,) = getReserves(); // gas savings
-   
-        if (amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
-
-        uint balance1;
-        uint balance2;
-        { // scope for _token{0,1}, avoids stack too deep errors
-
-            //require(to != _LOCAL_DOMAIN && to != _REMOTE_DOMAIN, 'MDEX: INVALID_TO');
-            // if (amountIn > 0) _safeTransfer(_LOCAL_DOMAIN, to, amountIn); // optimistically transfer tokens
-            // if (amountOut > 0) _safeTransfer(_REMOTE_DOMAIN, to, amountOut); // optimistically transfer tokens
-            // if (data.length > 0) MDexCallee(to).MDexCall(msg.sender, amountIn, amountOut, data);
-            // balance1 = IERC20(_LOCAL_DOMAIN).balanceOf(address(this));
-            // balance2 = IERC20(_REMOTE_DOMAIN).balanceOf(address(this));
-        }
-        // uint amount1In = balance1 > _reserve1 - amountIn ? balance1 - (_reserve1 - amountIn) : 0;
-        // uint amount2In = balance2 > _reserve2 - amountOut ? balance2 - (_reserve2 - amountOut) : 0;
-        // require(amount1In > 0 || amount2In > 0, 'MDEX: INSUFFICIENT_INPUT_AMOUNT');
-        // { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-        // uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
-        // uint balance2Adjusted = balance2.mul(1000).sub(amount2In.mul(3));
-        // require(balance1Adjusted.mul(balance2Adjusted) >= uint(_reserve1).mul(_reserve2).mul(1000**2), 'MDEX: K');
-        // }
-
-        //_update(balance1, balance2, _reserve1, _reserve2);
-        //emit Swap(msg.sender, amount1In, amount2In, amountIn, amountOut, to);
+    function removeLiquidityCore(uint amountIn, address from) internal lock returns (uint amountOut) {
 
 
     }
 
+
+    function swapCore(uint amountIn, address to) internal lock returns (uint amountOut) {
+
+        (uint _reserve1, uint _reserve2,) = getReserves(); // gas savings
+
+        amountOut = kValue / amountIn; // get ouput
+   
+        if (amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
+
+        emit Swap(to, amountIn, amountOut);
+    }
+
+    
+    function swapReceiver(uint _amountIn, address _to) internal lock {
+
+        uint amountOut = swapCore(_amountIn, _to);
+
+        (bool success, ) = address(_to).call{value: amountOut}("MDEX: SWAP_SUCCESSFUL");
+
+        if (!success) revert("MDEX: SWAP_FAILED");
+
+    }
+
     // this low-level function should be called from a contract which performs important safety checks
-    function swap(uint amountIn, uint amountOut, address to, bytes calldata data) external lock {
+    function swap(uint _amountIn, uint _gasAmount, address to) external payable lock {
+
+        uint gas = msg.value - _amountIn;
 
         bytes32 messageId = mailbox.dispatch(
             LOCAL_DOMAIN,
             remoteAddress.addressToBytes32(),
-            abi.encodeWithSignature('swapReceiver(uint amountIn, uint amountOut, address to, bytes calldata data)', amountIn, amountOut, to, data)
+            abi.encodeWithSignature('swapReceiver(uint,address)', _amountIn, to)
         );
+
+        uint amountOut = swapCore(_amountIn, to);
+
+        payForGas(messageId, REMOTE_DOMAIN, _gasAmount, gas, msg.sender);
+
+        emit Swap(to, _amountIn, amountOut);
         
     }
 
 
-        // gas payment
+    // gas payment
     function payForGas(
         bytes32 _messageId, 
         uint32 _destinationDomain, 
         uint256 _gasAmount,
+        uint256 _value,
         address _refundAddress
         ) public payable {
         
-        igp.payForGas{ value: msg.value }(
+        igp.payForGas{ value: _value }(
             _messageId, // The ID of the message that was just dispatched
             _destinationDomain, // The destination domain of the message
             _gasAmount, // 50k gas to use in the recipient's handle function
             _refundAddress // refunds go to msg.sender, who paid the msg.value
         );
-
     }
 
     // get gas info
