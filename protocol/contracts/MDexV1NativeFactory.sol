@@ -4,10 +4,10 @@ pragma solidity  0.8.19;
 import "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol";
 import "@hyperlane-xyz/core/contracts/libs/TypeCasts.sol";
 import './interfaces/IMDexPairNative.sol';
-import './MDexPairNative.sol';
+import './MDexV1PairNative.sol';
 
 
-contract MDexFactory is HyperlaneConnectionClient, IInterchainGasPaymaster, IMDexPairNative {
+contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymaster, IMDexPairNative {
 
     //Events
     event PairCreated(uint32 indexed chain1, uint32 indexed chain2, address pair, uint);
@@ -46,7 +46,7 @@ contract MDexFactory is HyperlaneConnectionClient, IInterchainGasPaymaster, IMDe
     function contractFactory (uint32 _destinationDomain, address _destinationAddress, bytes32 _salt) internal returns (address pair) {
         
         pair = address(
-            new MDexPairNative {salt: _salt} (
+            new MDexV1PairNative {salt: _salt} (
                 LOCAL_DOMAIN,
                 _destinationDomain, 
                 _destinationAddress 
