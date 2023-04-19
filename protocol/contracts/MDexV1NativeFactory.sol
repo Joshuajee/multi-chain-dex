@@ -10,7 +10,7 @@ import './MDexV1PairNative.sol';
 contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymaster, IMDexPairNative {
 
     //Events
-    event PairCreated(uint32 indexed chain1, uint32 indexed chain2, address pair, uint);
+    event PairCreated(uint32 indexed chain1, uint32 indexed chain2, address indexed pair, uint kValue, uint pairCount);
 
     //Liberies
     using TypeCasts for bytes32;
@@ -24,11 +24,9 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
     mapping(uint => mapping(uint => address)) public getPair;
     address[] public allPairs;
 
-
     constructor(uint32 _domain) {
         LOCAL_DOMAIN = _domain;
     }
-
 
     function initialize(address _mailbox, address _interchainGasPaymaster, address _interchainSecurityModule) external initializer() {
         __HyperlaneConnectionClient_initialize(
@@ -43,13 +41,16 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
         return allPairs.length;
     }
 
-    function contractFactory (uint32 _destinationDomain, address _destinationAddress, bytes32 _salt) internal returns (address pair) {
+    function contractFactory (uint32 _destinationDomain, uint _kValue, address _remoteAddress) internal returns (address pair) {
         
+        bytes32 salt = keccak256(abi.encodePacked(block.timestamp, LOCAL_DOMAIN));
+
         pair = address(
-            new MDexV1PairNative {salt: _salt} (
+            new MDexV1PairNative {salt: salt} (
                 LOCAL_DOMAIN,
                 _destinationDomain, 
-                _destinationAddress 
+                _kValue,
+                _remoteAddress 
             )
         );
 
@@ -62,11 +63,11 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
         getPair[LOCAL_DOMAIN][ _destinationDomain] = pair;
         getPair[ _destinationDomain][LOCAL_DOMAIN] = pair; 
         allPairs.push(pair);
-        
+
         return pair;
     }
 
-    function createPair(uint32 _destinationDomain, uint _gasAmount, address _destinationAddress) external payable returns (address pair) {
+    function createPair(uint32 _destinationDomain, uint256 _kValue,  uint _gasAmount, address _destinationAddress) external payable returns (address pair) {
 
         if (LOCAL_DOMAIN == _destinationDomain) revert('MDEX: IDENTICAL_CHAIN');
 
@@ -74,27 +75,25 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
 
         if (getPair[chainA][chainB] != address(0)) revert('MDEX: ALREADY EXISTS');
 
-        bytes32 salt = keccak256(abi.encodePacked(LOCAL_DOMAIN, _destinationDomain, block.timestamp));
-
-        pair = contractFactory(_destinationDomain, _destinationAddress, salt);
+        pair = contractFactory(_destinationDomain, _kValue, address(0));
 
         bytes32 messageId = IMailbox(mailbox).dispatch(
             LOCAL_DOMAIN,
             _destinationAddress.addressToBytes32(),
-            abi.encodeWithSignature('createPairReceiver(uint32,address,bytes32)', LOCAL_DOMAIN, salt, address(this))
+            abi.encodeWithSignature("createPairReceiver(uint32,uint256,address)", LOCAL_DOMAIN, _kValue, pair)
         );
 
         payForGas(messageId, _destinationDomain, _gasAmount, msg.sender);
         
-        emit PairCreated(LOCAL_DOMAIN,  _destinationDomain, pair, allPairs.length);
+        emit PairCreated(LOCAL_DOMAIN,  _destinationDomain, pair, _kValue, allPairs.length);
     
     }
 
-    function createPairReceiver(uint32 _destinationDomain, address _destinationAddress, bytes32 _salt) external onlyMailbox() returns (address pair) {
+    function createPairReceiver(uint32 _destinationDomain, uint256 _kValue, address _remoteAddress) external onlyMailbox returns (address pair) {
 
-        pair = contractFactory(_destinationDomain, _destinationAddress, _salt);
+        pair = contractFactory(_destinationDomain, _kValue, _remoteAddress);
     
-        emit PairCreated(LOCAL_DOMAIN, _destinationDomain, pair, allPairs.length);
+        emit PairCreated(LOCAL_DOMAIN, _destinationDomain, pair, _kValue, allPairs.length);
     
     }
 
@@ -121,7 +120,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
     }
 
     // hyperlane message handler
-    function handle(uint32 _origin, bytes32 _sender, bytes calldata _body) external onlyMailbox {
+    function handle(uint32 _origin, bytes32 _sender, bytes calldata _body) external onlyMailbox  {
         
         address sender = _sender.bytes32ToAddress();
 

@@ -8,6 +8,15 @@ describe("MDexV1NativeFactory", function () {
     const originDomain = 1000
     const remoteDomain = 2000
 
+    const kValue = 50 //ethers.utils.parseUnits("0.7", "ether");
+
+    const CREATE_PAIR = "0xeb82818700000000000000000000000000000000000000000000000000000000000003e80000000000000000000000000000000000000000000000000000000000002af8000000000000000000000000d2a5bc10698fd955d1fe6cb468a17809a08fd005";
+
+
+    const CREATE_PAIR_F = "0xd5c3948500000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000000000000000000000000000000000003b9aca00000000000000000000000000d2a5bc10698fd955d1fe6cb468a17809a08fd005";
+
+
+
     async function deploy() {
 
         // Contracts are deployed using the first signer/account by default
@@ -105,14 +114,14 @@ describe("MDexV1NativeFactory", function () {
                 const MockMailbox = await ethers.getContractFactory("MockMailbox");
                 const mockMailbox = await MockMailbox.connect(owner).deploy(1000);
 
-                await expect(mDexV1NativeFactory.createPair(remoteDomain, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith("!contract")
+                await expect(mDexV1NativeFactory.createPair(remoteDomain, kValue, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith("!contract")
                 
             });
 
             it("Should revert with the right error if the chains are the same", async function () {
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                await expect(mDexV1NativeFactory.createPair(originDomain, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith(
+                await expect(mDexV1NativeFactory.createPair(originDomain, kValue, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith(
                     "MDEX: IDENTICAL_CHAIN"
                 );
                 
@@ -121,7 +130,7 @@ describe("MDexV1NativeFactory", function () {
             it("Should create pair with right details", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, 10, mDexV1NativeFactory2.address, { value: 1000000000000000})
+                await mDexV1NativeFactory.createPair(remoteDomain, kValue, 10, mDexV1NativeFactory2.address, { value: 1000000000000000})
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -143,7 +152,7 @@ describe("MDexV1NativeFactory", function () {
 
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                const emit = await mDexV1NativeFactory.createPair(remoteDomain, 100000, mockMailbox.address, { value: 100000})
+                const emit = await mDexV1NativeFactory.createPair(remoteDomain, kValue, 100000, mockMailbox.address, { value: 100000})
                 
                 expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
                     .withArgs(originDomain, remoteDomain, await mDexV1NativeFactory.allPairs(0), 1); 
@@ -166,7 +175,7 @@ describe("MDexV1NativeFactory", function () {
                 await expect(mDexV1NativeFactory.connect(owner).handle(
                     originDomain, 
                     "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266", 
-                    "0x514de2d100000000000000000000000000000000000000000000000000000000000003e86d796c6f7665000000000000000000000000000000000000000000000000000000000000000000000000000069d4d4600f7db2d8595827bd6fbe81888f0a06dc"
+                    CREATE_PAIR
                 )).to.be.revertedWith("!mailbox")
                 
             });
@@ -178,7 +187,7 @@ describe("MDexV1NativeFactory", function () {
                 await mockMailbox.dispatch(
                     remoteDomain, 
                     mockMailbox.addressToBytes32(mDexV1NativeFactory2.address), 
-                    '0xe17ab01000000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000da07165d4f7c84eeefa7a4ff439e039b7925d3df000000000000000000000000da07165d4f7c84eeefa7a4ff439e039b7925d3df'
+                    CREATE_PAIR
                 )
 
                 await mockMailbox2.processNextInboundMessage()
@@ -202,7 +211,7 @@ describe("MDexV1NativeFactory", function () {
 
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                const emit = await mDexV1NativeFactory.createPair(remoteDomain, 100000, mockMailbox.address, { value: 100000})
+                const emit = await mDexV1NativeFactory.createPair(remoteDomain, kValue, 100000, mockMailbox.address, { value: 100000})
                 
                 expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
                     .withArgs(1, 190, await mDexV1NativeFactory.allPairs(0), 1); 

@@ -122,7 +122,7 @@
         "type": "uint32"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "pair",
         "type": "address"
@@ -130,7 +130,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "",
+        "name": "kValue",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pairCount",
         "type": "uint256"
       }
     ],
@@ -216,6 +222,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "_kValue",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_gasAmount",
         "type": "uint256"
       },
@@ -244,14 +255,14 @@
         "type": "uint32"
       },
       {
-        "internalType": "address",
-        "name": "_destinationAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_kValue",
+        "type": "uint256"
       },
       {
-        "internalType": "bytes32",
-        "name": "_salt",
-        "type": "bytes32"
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
       }
     ],
     "name": "createPairReceiver",
