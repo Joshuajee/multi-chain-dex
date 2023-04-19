@@ -1,7 +1,7 @@
 import { ethers } from "ethers"
 import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
-import { CHAIN_ID } from "./enums"
+import { CHAIN_ID, DOMAIN_ID } from "./enums"
 import { SUPPORTED_NETWORKS } from "./interfaces"
 
 export const dollarFormat = (amount: number) => {
@@ -79,19 +79,36 @@ export const isAddressZero = (address: Address) => {
 
 export const supportedNetworks : SUPPORTED_NETWORKS [] = [
     {
+        name: "Select Currency",
+        description: "",
+        icon: "",
+        chainId: CHAIN_ID.NONE,
+        domainId: DOMAIN_ID.NONE,
+        mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
+    },
+    {
         name: "Mumbai",
+        description: "",
+        icon: "",
         chainId: CHAIN_ID.MUMBAI,
-        icon: ""
+        domainId: DOMAIN_ID.MUMBAI,
+        mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
     },
     {
         name: "Goerli",
+        description: "",
+        icon: "",
         chainId: CHAIN_ID.GOERLI,
-        icon: ""
+        domainId: DOMAIN_ID.GOERLI,
+        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
     },
     {
         name: "BNB Testnet",
+        description: "",
+        icon: "",
         chainId: CHAIN_ID.BNB_TEST,
-        icon: ""
+        domainId: DOMAIN_ID.BNB_TEST,
+        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
     }
 
 ]

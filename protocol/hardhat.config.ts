@@ -20,7 +20,7 @@ const config = {
 		disambiguatePaths: false,
 		runOnCompile: true,
 		strict: true,
-		only: []
+		only: [":MDexV1"]
 	}
 };
 
