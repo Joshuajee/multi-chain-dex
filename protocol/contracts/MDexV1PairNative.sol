@@ -7,6 +7,7 @@ import "@hyperlane-xyz/core/contracts/libs/TypeCasts.sol";
 import './interfaces/IMDexPairNative.sol';
 import "./interfaces/IMDexLiquidityManager.sol";
 import "./libs/Liquidity.sol";
+import "hardhat/console.sol";
 
 
 contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfungibleNativeLiquidity {
@@ -63,12 +64,11 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     }
 
 
-    constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, uint _kValue, address _remoteAddress) {
+    constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) {
         remoteAddress = _remoteAddress;
-        factory = msg.sender;
+        factory = _factory;
         LOCAL_DOMAIN = _LOCAL_DOMAIN;
         REMOTE_DOMAIN = _REMOTE_DOMAIN;
-        kValue = _kValue;
     }
 
     function initialize(address _mailbox, address _interchainGasPaymaster, address _interchainSecurityModule) external initializer() {
@@ -80,12 +80,9 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
         );
     }
 
-    function getPrice1(uint _amount2) internal view returns(uint) {
-        return kValue / _amount2;
-    }
 
-    function getPrice2(uint _amount1) internal view returns(uint) {
-        return kValue / _amount1;
+    function getPrice(uint _amountIn) public view returns(uint) {
+        return (reserve1 * _amountIn) / (_amountIn + reserve2);
     }
 
     function _getGas(uint _amount) internal view returns(uint) {
@@ -97,7 +94,6 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     }
 
     function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) internal {
-
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
@@ -112,6 +108,10 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
             myPendingPositions.remove(sender, pendingPosition[sender]);
             reserve1 += positions[pendingPosition[sender]].amountIn1;
             reserve2 += positions[pendingPosition[sender]].amountIn2;
+
+            //pricing             
+            kValue = (reserve1) * (reserve2);
+
             delete pendingPosition[sender];
         }
 
@@ -135,33 +135,41 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     }
 
 
-    function addLiquidityReceiver(bytes32 _id, uint256 _amountIn, address _sender) external onlyMailbox {
-        addLiquidityCore(_id, _amountIn, getPrice2(_amountIn), _sender);    
+    function addLiquidityReceiver(bytes32 _id, uint256 _amountIn, uint256 _amountIn2, address _sender, address _remoteAddress) external onlyMailbox {
+        if (remoteAddress == address(0)) remoteAddress = _remoteAddress;
+        addLiquidityCore(_id, _amountIn2, _amountIn, _sender);    
     }
 
     
-    function swapReceiver(uint _amountIn, address _to) external onlyMailbox  {
+    function swapReceiver(uint256 _amountIn, address  _to) external onlyMailbox  {
 
-        uint amountOut = swapCore(_amountIn, _to);
+        console.log("dd");
 
-        (bool success, ) = address(_to).call{value: amountOut}("MDEX: SWAP_SUCCESSFUL");
+        uint amountOut = getPrice(_amountIn);
+
+        console.log("-----   ", amountOut);
+
+        (bool success, ) = payable(_to).call{value: amountOut}("MDEX: SWAP_SUCCESSFUL");
+
+        console.log(success);
 
         if (!success) revert("MDEX: SWAP_FAILED");
 
     }
 
-    function addLiquidity(uint _amountIn, uint _gasAmount, address _sender) external payable lock {
+    function addLiquidity(uint _amountIn, uint _amountIn2, uint _gasAmount, address _sender) external payable lock {
 
+        if (remoteAddress == address(0)) revert('MDEX: REMOTE ADDRESS NOT SET YET');
 
         bytes32 messageId = mailbox.dispatch(
             LOCAL_DOMAIN,
             remoteAddress.addressToBytes32(),
-            abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint256,address)", _generateId(_sender), _amountIn, _sender)
+            abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint256,uint256,address,address)", _generateId(_sender), _amountIn, _amountIn2, _sender, address(this))
         );
 
         payForGas(messageId, REMOTE_DOMAIN, _gasAmount, _getGas(_amountIn), _sender);
 
-        addLiquidityCore(_generateId(_sender), _amountIn, getPrice2(_amountIn), _sender);    
+        addLiquidityCore(_generateId(_sender), _amountIn, _amountIn2, _sender);    
 
     }
 
@@ -170,19 +178,20 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
 
     }
 
-    function swap(uint _amountIn, uint _gasAmount, address to) external payable lock {
+    function swap(uint _amountIn, uint _gasAmount, address _to) external payable lock {
 
         bytes32 messageId = mailbox.dispatch(
             LOCAL_DOMAIN,
             remoteAddress.addressToBytes32(),
-            abi.encodeWithSignature('swapReceiver(uint,address)', _amountIn, to)
+            abi.encodeWithSignature("swapReceiver(uint256,address)", _amountIn, _to)
         );
 
-        uint amountOut = swapCore(_amountIn, to);
+        console.logBytes32(messageId);
 
         payForGas(messageId, REMOTE_DOMAIN, _gasAmount, _getGas(_amountIn), msg.sender);
 
-        emit Swap(to, _amountIn, amountOut);
+        //swapCore(_amountIn, _to);
+
         
     }
 
@@ -212,6 +221,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     // hyperlane message handler
     function handle(uint32 _origin, bytes32 _sender, bytes calldata _body) external onlyMailbox lock {
         
+        // console.logBytes(_body);
         address sender = _sender.bytes32ToAddress();
 
         (bool success, ) = address(this).delegatecall(_body);
