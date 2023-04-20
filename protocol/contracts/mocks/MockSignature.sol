@@ -5,8 +5,8 @@ pragma solidity  ^0.8.0;
 contract MockSignature {
 
 
-    function encodeCreatePairReceiver(uint32 domain, uint256 kValue, address caller) external pure returns (bytes memory) {
-        return abi.encodeWithSignature("createPairReceiver(uint32,uint256,address)", domain, kValue, caller);
+    function encodeCreatePairReceiver(uint32 domain, address caller) external pure returns (bytes memory) {
+        return abi.encodeWithSignature("createPairReceiver(uint32,address)", domain, caller);
     }
 
     function encodeAddLiquidity(uint256 _amountIn, address _sender) external pure returns (bytes memory) {

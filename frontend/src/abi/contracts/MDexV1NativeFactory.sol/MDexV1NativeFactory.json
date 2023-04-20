@@ -5,6 +5,11 @@
         "internalType": "uint32",
         "name": "_domain",
         "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "_cloneFactory",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -112,26 +117,20 @@
       {
         "indexed": true,
         "internalType": "uint32",
-        "name": "chain1",
+        "name": "remoteDomain",
         "type": "uint32"
       },
       {
         "indexed": true,
-        "internalType": "uint32",
-        "name": "chain2",
-        "type": "uint32"
+        "internalType": "address",
+        "name": "remoteAddress",
+        "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
         "name": "pair",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "kValue",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -217,13 +216,8 @@
     "inputs": [
       {
         "internalType": "uint32",
-        "name": "_destinationDomain",
+        "name": "_remoteDomain",
         "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_kValue",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -232,7 +226,7 @@
       },
       {
         "internalType": "address",
-        "name": "_destinationAddress",
+        "name": "_remoteAddress",
         "type": "address"
       }
     ],
@@ -251,13 +245,8 @@
     "inputs": [
       {
         "internalType": "uint32",
-        "name": "_destinationDomain",
+        "name": "_remoteDomain",
         "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_kValue",
-        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -407,7 +396,7 @@
       },
       {
         "internalType": "uint32",
-        "name": "_destinationDomain",
+        "name": "_remoteDomain",
         "type": "uint32"
       },
       {
@@ -430,7 +419,7 @@
     "inputs": [
       {
         "internalType": "uint32",
-        "name": "_destinationDomain",
+        "name": "_remoteDomain",
         "type": "uint32"
       },
       {

@@ -12,13 +12,13 @@
         "type": "uint32"
       },
       {
-        "internalType": "uint256",
-        "name": "_kValue",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_remoteAddress",
+        "name": "_factory",
         "type": "address"
       }
     ],
@@ -213,6 +213,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_gasAmount",
         "type": "uint256"
       },
@@ -240,8 +245,18 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_sender",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
         "type": "address"
       }
     ],
@@ -258,6 +273,25 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -633,7 +667,7 @@
       },
       {
         "internalType": "address",
-        "name": "to",
+        "name": "_to",
         "type": "address"
       }
     ],

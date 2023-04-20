@@ -69,11 +69,6 @@
         "type": "uint32"
       },
       {
-        "internalType": "uint256",
-        "name": "kValue",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "caller",
         "type": "address"

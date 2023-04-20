@@ -3,28 +3,29 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 
-describe("MDexV1NativeFactory", function () {
+describe("MDexV1NativeFactory",  function () {
     
     const originDomain = 1000
     const remoteDomain = 2000
 
-    const kValue = 50 //ethers.utils.parseUnits("0.7", "ether");
-
-    const CREATE_PAIR = "0xeb82818700000000000000000000000000000000000000000000000000000000000003e80000000000000000000000000000000000000000000000000000000000002af8000000000000000000000000d2a5bc10698fd955d1fe6cb468a17809a08fd005";
-
-
-    const CREATE_PAIR_F = "0xd5c3948500000000000000000000000000000000000000000000000000000000000003e8000000000000000000000000000000000000000000000000000000003b9aca00000000000000000000000000d2a5bc10698fd955d1fe6cb468a17809a08fd005";
-
-
 
     async function deploy() {
+
+        const MockSignature = await ethers.getContractFactory("MockSignature");
+        const mockSignature = await MockSignature.deploy()
 
         // Contracts are deployed using the first signer/account by default
         const [owner, one, two, three, four] = await ethers.getSigners();
 
         const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
-        const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(originDomain);
-        const mDexV1NativeFactory2 = await MDexV1NativeFactory.connect(owner).deploy(remoteDomain);
+
+        const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
+
+        const mDexV1CloneFactory  = await MDexV1CloneFactory.connect(owner).deploy();
+        const mDexV1CloneFactory2  = await MDexV1CloneFactory.connect(owner).deploy();
+
+        const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(originDomain, mDexV1CloneFactory.address);
+        const mDexV1NativeFactory2 = await MDexV1NativeFactory.connect(owner).deploy(remoteDomain, mDexV1CloneFactory2.address);
 
         // MailBox
         const MockMailbox = await ethers.getContractFactory("MockMailbox");
@@ -50,31 +51,32 @@ describe("MDexV1NativeFactory", function () {
         await interchainGasPaymaster1.setExchangeRate(originDomain, 5)
         //End InterchainGasMaster
 
-        return { MockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
+        return { MockMailbox, mockSignature, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
     }
 
 
 
     async function initialize() {
 
-        const { MockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
+        const { MockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
 
-        // const MockMailbox = await ethers.getContractFactory("MockMailbox");
         const interchainSecurityModule = await MockMailbox.connect(owner).deploy(originDomain);
         
         await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster1.address, interchainSecurityModule.address)
 
-        await mDexV1NativeFactory2.initialize(mockMailbox2.address, interchainGasPaymaster2.address, interchainSecurityModule.address)
+        await mDexV1NativeFactory2.initialize(mockSignature.address, interchainGasPaymaster2.address, interchainSecurityModule.address)
 
-        return { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2, owner, one, two, three, four};
+        return { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, owner, one, two, three, four};
     }
 
     describe("Deployment", function () {
 
         it("Domain Should be set correctly", async function () {
             const [owner] = await ethers.getSigners();
+            const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
+            const mDexV1CloneFactory  = await MDexV1CloneFactory.connect(owner).deploy();
             const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
-            const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(1);
+            const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(1, mDexV1CloneFactory.address);
             expect(await mDexV1NativeFactory.LOCAL_DOMAIN()).to.be.equal(1)
         });
 
@@ -114,14 +116,14 @@ describe("MDexV1NativeFactory", function () {
                 const MockMailbox = await ethers.getContractFactory("MockMailbox");
                 const mockMailbox = await MockMailbox.connect(owner).deploy(1000);
 
-                await expect(mDexV1NativeFactory.createPair(remoteDomain, kValue, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith("!contract")
+                await expect(mDexV1NativeFactory.createPair(remoteDomain, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith("!contract")
                 
             });
 
             it("Should revert with the right error if the chains are the same", async function () {
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                await expect(mDexV1NativeFactory.createPair(originDomain, kValue, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith(
+                await expect(mDexV1NativeFactory.createPair(originDomain, 100, mockMailbox.address, { value: 100000})).to.be.revertedWith(
                     "MDEX: IDENTICAL_CHAIN"
                 );
                 
@@ -130,7 +132,7 @@ describe("MDexV1NativeFactory", function () {
             it("Should create pair with right details", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, kValue, 10, mDexV1NativeFactory2.address, { value: 1000000000000000})
+                await mDexV1NativeFactory.createPair(remoteDomain, 10, mDexV1NativeFactory2.address, { value: 1000000000000000})
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -152,7 +154,7 @@ describe("MDexV1NativeFactory", function () {
 
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                const emit = await mDexV1NativeFactory.createPair(remoteDomain, kValue, 100000, mockMailbox.address, { value: 100000})
+                const emit = await mDexV1NativeFactory.createPair(remoteDomain, 100000, mockMailbox.address, { value: 100000})
                 
                 expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
                     .withArgs(originDomain, remoteDomain, await mDexV1NativeFactory.allPairs(0), 1); 
@@ -170,36 +172,14 @@ describe("MDexV1NativeFactory", function () {
 
             it("Should revert if not called by MockMailbox contract", async function () {
 
-                const { mDexV1NativeFactory, owner } = await loadFixture(initialize);
+                const { mDexV1NativeFactory, owner, mockSignature } = await loadFixture(initialize);
 
                 await expect(mDexV1NativeFactory.connect(owner).handle(
                     originDomain, 
                     "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266", 
-                    CREATE_PAIR
+                    mockSignature.encodeCreatePairReceiver(originDomain, owner.address)
                 )).to.be.revertedWith("!mailbox")
                 
-            });
-
-            it("Should create new pair on remote chain", async function () {
-                
-                const { mDexV1NativeFactory2, mockMailbox, mockMailbox2 } = await loadFixture(initialize);
-            
-                await mockMailbox.dispatch(
-                    remoteDomain, 
-                    mockMailbox.addressToBytes32(mDexV1NativeFactory2.address), 
-                    CREATE_PAIR
-                )
-
-                await mockMailbox2.processNextInboundMessage()
-
-                expect(await mDexV1NativeFactory2.allPairsLength()).to.be.equal(1)
-
-                const address = await mDexV1NativeFactory2.allPairs(0)
-
-                expect(await mDexV1NativeFactory2.allPairs(0)).to.be.equal(address)
-
-                expect(await mDexV1NativeFactory2.getPair(originDomain, remoteDomain)).to.be.equal(address)
-
             });
             
         })
@@ -211,7 +191,7 @@ describe("MDexV1NativeFactory", function () {
 
                 const { mDexV1NativeFactory, mockMailbox } = await loadFixture(initialize);
 
-                const emit = await mDexV1NativeFactory.createPair(remoteDomain, kValue, 100000, mockMailbox.address, { value: 100000})
+                const emit = await mDexV1NativeFactory.createPair(remoteDomain, 100000, mockMailbox.address, { value: 100000})
                 
                 expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
                     .withArgs(1, 190, await mDexV1NativeFactory.allPairs(0), 1); 
