@@ -1,4 +1,3 @@
-import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
 import { CHAIN_ID, ROUTES } from '@/libs/enums'

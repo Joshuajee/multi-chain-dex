@@ -1,5 +1,6 @@
 import { Address } from "wagmi";
-import { CHAIN_ID } from "./enums";
+import { CHAIN_ID, FACTORY_ADDRESS } from "./enums";
+import { SUPPORTED_SYMBOLS } from "./types";
 
 export interface SUPPORTED_NETWORKS {
     name: string,
@@ -7,6 +8,7 @@ export interface SUPPORTED_NETWORKS {
     icon: string,
     chainId: CHAIN_ID,
     domainId: number,
-    mailbox: Address,
-    
+    mailbox?: Address,
+    factoryAddress: FACTORY_ADDRESS,
+    symbol: SUPPORTED_SYMBOLS;
 }

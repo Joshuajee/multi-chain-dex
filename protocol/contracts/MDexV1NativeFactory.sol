@@ -17,7 +17,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
     using TypeCasts for bytes32;
     using TypeCasts for address;
 
-    address clonefactory;
+    address public clonefactory;
 
     uint32 public LOCAL_DOMAIN;
 
@@ -32,12 +32,10 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
         clonefactory = _cloneFactory;
     }
 
-    function initialize(address _mailbox, address _interchainGasPaymaster, address _interchainSecurityModule) external initializer() {
+    function initialize(address _mailbox, address _interchainGasPaymaster) external initializer() {
         __HyperlaneConnectionClient_initialize(
             _mailbox, 
-            _interchainGasPaymaster, 
-            _interchainSecurityModule, 
-            msg.sender
+            _interchainGasPaymaster
         );
     }
 
@@ -51,8 +49,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
 
         IMDexPairNative(pair).initialize(
             address(mailbox), 
-            address(interchainGasPaymaster), 
-            address(interchainSecurityModule)
+            address(interchainGasPaymaster)
         ); 
 
         getPair[LOCAL_DOMAIN][ _remoteDomain] = pair;

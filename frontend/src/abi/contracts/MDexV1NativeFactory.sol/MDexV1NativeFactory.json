@@ -213,6 +213,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "clonefactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint32",
@@ -322,11 +335,6 @@
       {
         "internalType": "address",
         "name": "_interchainGasPaymaster",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_interchainSecurityModule",
         "type": "address"
       }
     ],

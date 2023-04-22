@@ -8,7 +8,6 @@ describe("MDexV1NativeFactory",  function () {
     const originDomain = 1000
     const remoteDomain = 2000
 
-
     async function deploy() {
 
         const MockSignature = await ethers.getContractFactory("MockSignature");
@@ -51,7 +50,7 @@ describe("MDexV1NativeFactory",  function () {
         await interchainGasPaymaster1.setExchangeRate(originDomain, 5)
         //End InterchainGasMaster
 
-        return { MockMailbox, mockSignature, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
+        return { MockMailbox, mockSignature, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
     }
 
 
@@ -60,11 +59,9 @@ describe("MDexV1NativeFactory",  function () {
 
         const { MockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
 
-        const interchainSecurityModule = await MockMailbox.connect(owner).deploy(originDomain);
-        
-        await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster1.address, interchainSecurityModule.address)
+        await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster1.address)
 
-        await mDexV1NativeFactory2.initialize(mockSignature.address, interchainGasPaymaster2.address, interchainSecurityModule.address)
+        await mDexV1NativeFactory2.initialize(mockSignature.address, interchainGasPaymaster2.address)
 
         return { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, owner, one, two, three, four};
     }
@@ -88,19 +85,13 @@ describe("MDexV1NativeFactory",  function () {
         it("Should initialize with the right Info", async function () {
             const { mDexV1NativeFactory, owner, MockMailbox, mockMailbox } = await loadFixture(deploy);
 
-            // const MockMailbox = await ethers.getContractFactory("MockMailbox");
             const interchainGasPaymaster = await MockMailbox.connect(owner).deploy(1000);
 
-            // const MockMailbox = await ethers.getContractFactory("MockMailbox");
-            const interchainSecurityModule = await MockMailbox.connect(owner).deploy(1000);
-            
-            await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster.address, interchainSecurityModule.address)
+            await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster.address)
     
             expect(await mDexV1NativeFactory.mailbox()).to.be.equal(mockMailbox.address)
 
             expect(await mDexV1NativeFactory.interchainGasPaymaster()).to.be.equal(interchainGasPaymaster.address)
-
-            expect(await mDexV1NativeFactory.interchainSecurityModule()).to.be.equal(interchainSecurityModule.address)
 
         });
 
