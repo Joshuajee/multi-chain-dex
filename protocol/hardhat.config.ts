@@ -2,8 +2,11 @@ require('dotenv').config();
 import 'hardhat-abi-exporter';
 import 'hardhat-contract-sizer';
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomiclabs/hardhat-etherscan";
 
 const PRIVATE_KEY = String(process.env.PRIVATE_KEY);
+const POLYGONSCAN_API_KEY = String(process.env.POLYGONSCAN_API_KEY);
+const BSCSCAN_API_KEY = String(process.env.BSCSCAN_API_KEY);
 
 const config = {
 	solidity: "0.8.19",
@@ -51,6 +54,12 @@ const config = {
 			url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
 			accounts: [ PRIVATE_KEY ]
 		},
+	},
+	etherscan: {
+		apiKey: {
+			polygonMumbai: POLYGONSCAN_API_KEY,
+			bscTestnet: BSCSCAN_API_KEY 
+		}
 	}
 };
 

@@ -57,7 +57,7 @@ describe("MDexV1NativeFactory",  function () {
 
     async function initialize() {
 
-        const { MockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
+        const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
 
         await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster1.address)
 
@@ -132,7 +132,6 @@ describe("MDexV1NativeFactory",  function () {
                 expect(await mDexV1NativeFactory.allPairs(0)).to.be.equal(address)
 
                 expect(await mDexV1NativeFactory.getPair(originDomain, remoteDomain)).to.be.equal(address)
-
                 
             });
             
@@ -192,6 +191,5 @@ describe("MDexV1NativeFactory",  function () {
         })
 
     });
-
 
 });

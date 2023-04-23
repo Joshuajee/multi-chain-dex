@@ -21,9 +21,6 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
 
     uint32 public LOCAL_DOMAIN;
 
-    // supported chain ID and name this is the Hyperlane ID
-    mapping(uint => string) public supportedChainId;
-
     mapping(uint => mapping(uint => address)) public getPair;
     address[] public allPairs;
 
@@ -69,7 +66,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IInterchainGasPaymast
         pair =  contractFactory(_remoteDomain, address(0));
 
         bytes32 messageId = IMailbox(mailbox).dispatch(
-            LOCAL_DOMAIN,
+            _remoteDomain,
             _remoteAddress.addressToBytes32(),
             abi.encodeWithSignature("createPairReceiver(uint32,address)", LOCAL_DOMAIN, pair)
         );

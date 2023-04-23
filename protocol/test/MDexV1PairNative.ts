@@ -74,7 +74,6 @@ describe("Liquidity Pool", function () {
 
         const  { mockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await loadFixture(deploy);
 
-
         await pair2Contract.addLiquidity(amount, amount2, gasAmount, owner.address, { value: gas})
         
         mockMailbox.processNextInboundMessage()

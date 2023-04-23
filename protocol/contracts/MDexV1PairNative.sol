@@ -219,7 +219,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
 
         if (remoteAddress == address(0)) revert('MDEX: REMOTE ADDRESS NOT SET YET');
         bytes32 messageId = mailbox.dispatch(
-            LOCAL_DOMAIN,
+            REMOTE_DOMAIN,
             remoteAddress.addressToBytes32(),
             abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint256,uint256,address,address)", _generateId(_sender), _amountIn, _amountIn2, _sender, address(this))
         );
@@ -238,7 +238,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     function swap(uint _amountIn, uint _gasAmount, address _to) external payable lock {
 
         bytes32 messageId = mailbox.dispatch(
-            LOCAL_DOMAIN,
+            REMOTE_DOMAIN,
             remoteAddress.addressToBytes32(),
             abi.encodeWithSignature("swapReceiver(uint256,address)", _amountIn, _to)
         );

@@ -9,14 +9,15 @@ import { InjectedConnector } from 'wagmi/connectors/injected'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import { useEffect } from 'react'
 import { ToastContainer } from 'react-toastify';
-import Router from 'next/router';
-import AOS from 'aos'
-import 'aos/dist/aos.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
   [polygonMumbai, goerli, bscTestnet],
-  [alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}), publicProvider()],
+  [
+    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}),
+    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}),
+    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}), 
+    publicProvider()],
 )
 
  
@@ -40,7 +41,7 @@ const client = createClient({
     new WalletConnectConnector({
       chains,
       options: {
-        //qrcode: true,
+        qrcode: true,
         projectId: "Project X"
       },
     }),
@@ -50,10 +51,6 @@ const client = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
-
-  useEffect(() => {
-    AOS.init({ duration: 500 });
-  }, []);
 
   return (
     <WagmiConfig client={client}>

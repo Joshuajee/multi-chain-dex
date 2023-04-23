@@ -17,7 +17,9 @@ async function main() {
 
   await mDexV1NativeFactory.initialize(MAILBOX, interchainGasPaymaster)
 
-  console.log(" Contract: ", mDexV1NativeFactory.address)
+  
+  console.log("Factory: ", mDexV1CloneFactory.address)
+  console.log("Contract: ", mDexV1NativeFactory.address)
 
 }
 
