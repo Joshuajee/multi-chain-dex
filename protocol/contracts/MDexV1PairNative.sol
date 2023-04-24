@@ -4,12 +4,12 @@ pragma solidity 0.8.19;
 
 import "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol";
 import "@hyperlane-xyz/core/contracts/libs/TypeCasts.sol";
-import './interfaces/IMDexPairNative.sol';
+import './interfaces/IMDexV1PairNative.sol';
 import "./interfaces/IMDexLiquidityManager.sol";
 import "./libs/Liquidity.sol";
 
 
-contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfungibleNativeLiquidity {
+contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INonfungibleNativeLiquidity {
 
     //Events
     event Swap(address indexed to, uint amountIn, uint amountOut);
@@ -59,6 +59,11 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
         unlocked = 1;
     }
 
+    modifier onlyFactory() {
+        if (msg.sender != factory) revert('MDEX: ONLY FACTORY');
+        _;
+    }
+
     constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) {
         remoteAddress = _remoteAddress;
         factory = _factory;
@@ -100,7 +105,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
         return keccak256(abi.encodePacked(_sender, positionCounter));
     }
 
-    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) internal {
+    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) external onlyFactory {
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
@@ -183,12 +188,12 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     }
 
 
-    function removeLiquidityCore(uint amountIn, address from) internal returns (uint amountOut) {
+    function removeLiquidityCore(uint amountIn, address from) external onlyFactory returns (uint amountOut) {
 
 
     }
 
-    function swapCore(uint amountIn, address to) internal returns (uint amountOut) {
+    function swapCore(uint amountIn, address to) external onlyFactory returns (uint amountOut) {
 
         (uint _reserve1, uint _reserve2,) = getReserves(); // gas savings
 
@@ -200,9 +205,9 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
     }
 
 
-    function addLiquidityReceiver(bytes32 _id, uint256 _amountIn, uint256 _amountIn2, address _sender, address _remoteAddress) external onlyMailbox {
+    function addLiquidityReceiver(bytes32 _id, uint256 _amountIn, uint256 _amountIn2, address _sender, address _remoteAddress) external onlyFactory {
         if (remoteAddress == address(0)) remoteAddress = _remoteAddress;
-        addLiquidityCore(_id, _amountIn2, _amountIn, _sender);    
+        //addLiquidityCore(_id, _amountIn2, _amountIn, _sender);    
     }
 
     function swapReceiver(uint256 _amountIn, address  _to) external onlyMailbox  {
@@ -226,7 +231,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
 
         payForGas(messageId, REMOTE_DOMAIN, _gasAmount, _getGas(_amountIn), _sender);
 
-        addLiquidityCore(_generateId(_sender), _amountIn, _amountIn2, _sender);    
+        //addLiquidityCore(_generateId(_sender), _amountIn, _amountIn2, _sender);    
 
     }
 
@@ -245,7 +250,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
 
         payForGas(messageId, REMOTE_DOMAIN, _gasAmount, _getGas(_amountIn), msg.sender);
 
-        swapCore(_amountIn, _to);
+        //swapCore(_amountIn, _to);
 
         payerInvestor(_amountIn);
 
@@ -307,5 +312,9 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexPairNative, INonfu
         emit ReceivedMessage(_origin, sender, _body);
 
     }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 
 }

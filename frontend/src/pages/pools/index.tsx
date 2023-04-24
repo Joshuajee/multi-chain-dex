@@ -3,6 +3,7 @@ import Layout from '@/components/utils/Layout'
 import { CHAIN_ID, ROUTES } from '@/libs/enums'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { useContractRead } from 'wagmi'
 
 
 export default function Pools() {
@@ -15,6 +16,13 @@ export default function Pools() {
     const [chainIdFrom, setChainIdFrom] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
     const [chainIdTo, setChainIdTo] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
 
+
+    // const pair1 = useContractRead({
+    //     address: pair1Details.factoryAddress as Address,
+    //     abi: MDexV1NativeFactoryABI,
+    //     functionName: 'getPair',
+    //     //args: [pair1Details.chainId, pair2Details.chainId],
+    // })
 
     return (
         <Layout>
