@@ -329,6 +329,11 @@
       },
       {
         "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "_remoteAddress",
         "type": "address"
       }
@@ -657,8 +662,46 @@
   {
     "inputs": [
       {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
         "internalType": "uint256",
         "name": "_amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gasAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "swap",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountOut",
         "type": "uint256"
       },
       {

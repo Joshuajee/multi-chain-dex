@@ -25,8 +25,9 @@ describe("Liquidity Pool", function () {
 
         // MailBox
         const MockMailbox = await ethers.getContractFactory("MockMailbox");
+
         const mockMailbox = await MockMailbox.deploy(originDomain);
-        const mockMailbox2 = await MockMailbox.deploy(originDomain);
+        const mockMailbox2 = await MockMailbox.deploy(remoteDomain);
 
         // adding remote
         await mockMailbox.addRemoteMailbox(remoteDomain, mockMailbox2.address);
@@ -34,13 +35,13 @@ describe("Liquidity Pool", function () {
 
         const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
 
-        const mDexV1CloneFactory  = await MDexV1CloneFactory.connect(owner).deploy();
-        const mDexV1CloneFactory2  = await MDexV1CloneFactory.connect(owner).deploy();
+        const mDexV1CloneFactory  = await MDexV1CloneFactory.deploy();
+        const mDexV1CloneFactory2  = await MDexV1CloneFactory.deploy();
 
 
         const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
-        const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(originDomain, mDexV1CloneFactory.address);
-        const mDexV1NativeFactory2 = await MDexV1NativeFactory.connect(owner).deploy(remoteDomain, mDexV1CloneFactory2.address);
+        const mDexV1NativeFactory = await MDexV1NativeFactory.deploy(originDomain, mDexV1CloneFactory.address);
+        const mDexV1NativeFactory2 = await MDexV1NativeFactory.deploy(remoteDomain, mDexV1CloneFactory2.address);
 
         //InterchainGasMaster
         const MIGP = await ethers.getContractFactory("MockInterchainGasPaymaster");
@@ -73,17 +74,13 @@ describe("Liquidity Pool", function () {
 
     async function addLiquidity() {
 
-        const  { mockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await loadFixture(deploy);
+        const  { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await loadFixture(deploy);
 
-        await pair2Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, owner.address, { value: gas})
 
-        mockMailbox.processNextInboundMessage()
+        mockMailbox2.processNextInboundMessage()
 
-        await pair1Contract.addLiquidity(amount2, amount1, gasAmount, owner.address, { value: gas})
-
-        mockMailbox.processNextInboundMessage()
-
-        return  { mockMailbox, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four}
+        return  { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four}
 
 
     }
@@ -94,13 +91,13 @@ describe("Liquidity Pool", function () {
 
         it("Contract 1 should have the right values on creation", async function () {
 
-            const { pair1Contract, mDexV1NativeFactory } = await loadFixture(deploy);
+            const { pair1Contract, mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
             expect(await pair1Contract.positionCounter()).to.be.equal(1)
 
             expect(await pair1Contract.factory()).to.be.equal(mDexV1NativeFactory.address)
 
-            expect(await pair1Contract.remoteAddress()).to.be.equal(ethers.constants.AddressZero)
+            expect(await pair1Contract.remoteAddress()).to.be.equal(mDexV1NativeFactory2.address)
 
             expect(await pair1Contract.LOCAL_DOMAIN()).to.be.equal(originDomain)
 
@@ -118,13 +115,13 @@ describe("Liquidity Pool", function () {
 
         it("Contract 2 should have the right values on creation", async function () {
 
-            const { pair1Contract, pair2Contract, mDexV1NativeFactory2 } = await loadFixture(deploy);
+            const { pair2Contract, mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
             expect(await pair2Contract.positionCounter()).to.be.equal(1)
 
             expect(await pair2Contract.factory()).to.be.equal(mDexV1NativeFactory2.address)
 
-            expect(await pair2Contract.remoteAddress()).to.be.equal(pair1Contract.address)
+            expect(await pair2Contract.remoteAddress()).to.be.equal(mDexV1NativeFactory.address)
 
             expect(await pair2Contract.LOCAL_DOMAIN()).to.be.equal(remoteDomain)
 
@@ -147,13 +144,13 @@ describe("Liquidity Pool", function () {
 
             it("Should add Liquidity to both contracts", async function () {
 
-                const { mockMailbox, mockMailbox2, owner, mDexV1NativeFactory, mDexV1NativeFactory2, pair1Contract, pair2Contract } = await loadFixture(deploy);
+                const { mockMailbox, mockMailbox2, one, mDexV1NativeFactory, mDexV1NativeFactory2, pair1Contract, pair2Contract } = await loadFixture(deploy);
 
-                await mDexV1NativeFactory.connect(owner).addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+                await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
                 await mockMailbox2.processNextInboundMessage()
 
-                await mDexV1NativeFactory2.connect(owner).addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+                await mDexV1NativeFactory2.connect(one).addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
                 mockMailbox.processNextInboundMessage()
 
@@ -163,41 +160,141 @@ describe("Liquidity Pool", function () {
 
             });
 
+            it("Should add Liquidity to opened Positions, when Liquity is added to both contract by same user", async function () {
 
-            // it("Should add Liquidity to opened Positions, when Liquity is added to both contract by same user", async function () {
+                const { mockMailbox, mockMailbox2, one, mDexV1NativeFactory, mDexV1NativeFactory2, pair1Contract, pair2Contract } = await loadFixture(deploy);
 
-            //     const { mockMailbox, owner, pair1Contract, pair2Contract } = await loadFixture(deploy);
+                await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
-            //     await pair2Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
+                await mockMailbox2.processNextInboundMessage()
 
-            //     mockMailbox.processNextInboundMessage()
+                await mDexV1NativeFactory2.connect(one).addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
-            //     await pair1Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
+                await mockMailbox.processNextInboundMessage()
 
-            //     mockMailbox.processNextInboundMessage()
+                expect(await pair1Contract.positionCounter()).to.be.equal(2)
 
-            //     expect(await pair2Contract.positionCounter()).to.be.equal(1)
+                expect(await pair2Contract.positionCounter()).to.be.equal(2)
 
-            //     expect(await pair1Contract.openPositionArray(0)).to.be.equal(1)
+                expect(await pair1Contract.openPositionArray(0)).to.be.equal(2)
 
-            // });
+                expect(await pair2Contract.openPositionArray(0)).to.be.equal(2)
 
-            // it("Contract Balance should be increase to amount", async function () {
+            });
 
-            //     const { mockMailbox, pair1, pair2, pair1Contract, pair2Contract, owner } = await loadFixture(deploy);
+            it("Contract Balance and reserves should be increase to amount in both contract", async function () {
+
+                const { mockMailbox,mDexV1NativeFactory, mDexV1NativeFactory2, pair1Contract, pair2Contract } = await loadFixture(deploy);
+
+                const balance1 = await ethers.provider.getBalance(pair1Contract.address);
+
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+
+                await mockMailbox.processNextInboundMessage()
+
+                const balance2 = await ethers.provider.getBalance(pair2Contract.address);
+
+
+                expect(balance1).to.be.equal(amount1)
+                expect(balance2).to.be.equal(amount2)
+
+                expect(await pair1Contract.reserve1()).to.be.equal(amount1)
+                expect(await pair1Contract.reserve2()).to.be.equal(amount2)
+
+                expect(await pair2Contract.reserve2()).to.be.equal(amount1)
+                expect(await pair2Contract.reserve1()).to.be.equal(amount2)
+
+            });
+
+        })
+
+    })
+
+
+    describe("Swaping Assets", function () {
+
+        describe("Validations", function () {
+
+
+
+            it("Balances should update with right details during Swap from pair One", async function () {
+
+                const { mockMailbox2, pair1, pair2, mDexV1NativeFactory, mDexV1NativeFactory2, owner } = await loadFixture(addLiquidity);
+
+                const balance1 = await ethers.provider.getBalance(pair1);
+                const balance2 = await ethers.provider.getBalance(pair2);
+
+                const amountIn = ethers.utils.parseUnits("2", "ether");
+                const gas = ethers.utils.parseUnits("2.1", "ether");
+
+                await mDexV1NativeFactory.swap(remoteDomain, amountIn, 1000, owner.address, mDexV1NativeFactory2.address, { value: gas})
+
+                const balance1_1 = await ethers.provider.getBalance(pair1);
+                const balance2_1 = await ethers.provider.getBalance(pair2);
+
+                await mockMailbox2.processNextInboundMessage()
+
+                const balance1_2 = await ethers.provider.getBalance(pair1);
+                const balance2_2 = await ethers.provider.getBalance(pair2);
+
+                console.log({balance1, balance2})
+                console.log({balance1_2, balance2_2})
+
+
+                expect(balance1_1).to.be.greaterThan(balance1)
+                expect(balance2_1).to.be.equal(balance2)
+                expect(balance1_2).to.be.greaterThan(balance1)
+                expect(balance2_2).to.be.lessThan(balance2)
+
+            });
+
+            it("Balances should update with right details during Swap from pair Two", async function () {
+
+                const { mockMailbox, mockMailbox2, pair1, pair2, mDexV1NativeFactory, mDexV1NativeFactory2, owner } = await loadFixture(addLiquidity);
+
+                const balance1 = await ethers.provider.getBalance(pair1);
+                const balance2 = await ethers.provider.getBalance(pair2);
+
+                const amountIn = ethers.utils.parseUnits("2", "ether");
+                const gas = ethers.utils.parseUnits("2.1", "ether");
+
+                await mDexV1NativeFactory2.swap(originDomain, amountIn, 1000, owner.address, mDexV1NativeFactory.address, { value: gas})
+
+                const balance1_1 = await ethers.provider.getBalance(pair1);
+                const balance2_1 = await ethers.provider.getBalance(pair2);
+
+                await mockMailbox2.processNextInboundMessage()
+
+                const balance1_2 = await ethers.provider.getBalance(pair1);
+                const balance2_2 = await ethers.provider.getBalance(pair2);
+
+                console.log({balance1, balance2})
+                console.log({balance1_1, balance2_1})
+                console.log({balance1_2, balance2_2})
+
+
+                // expect(balance1_1).to.be.equal(balance1)
+                // expect(balance2_1).to.be.greaterThan(balance2)
+                // expect(balance1_2).to.be.greaterThan(balance1)
+                // expect(balance2_2).to.be.lessThan(balance2)
+
+            });
+
+
+            // it("Balances should update with right details during Swap from pair Two", async function () {
+
+            //     const { pair1, pair2, pair2Contract, one, mockMailbox } = await loadFixture(addLiquidity);
 
             //     const balance1 = await ethers.provider.getBalance(pair1);
-
             //     const balance2 = await ethers.provider.getBalance(pair2);
 
-            //     await pair2Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
+            //     const amountIn = ethers.utils.parseUnits("1", "ether");
+            //     const gas = ethers.utils.parseUnits("1.1", "ether");
 
-            //     mockMailbox.processNextInboundMessage()
+            //     await pair2Contract.swap(amountIn, 1000, one.address, { value: gas})
 
             //     const balance1_1 = await ethers.provider.getBalance(pair1);
             //     const balance2_1 = await ethers.provider.getBalance(pair2);
-
-            //     await pair1Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
 
             //     mockMailbox.processNextInboundMessage()
 
@@ -205,127 +302,31 @@ describe("Liquidity Pool", function () {
             //     const balance2_2 = await ethers.provider.getBalance(pair2);
 
 
-            //     expect(balance1).to.be.equal(0)
-            //     expect(balance2).to.be.equal(0)
+            //     // console.log({ balance1, balance2 })
 
-            //     expect(balance1_1).to.be.equal(0)
-            //     expect(balance2_1).to.be.equal(amount1)
+            //     // console.log({ balance1_1, balance2_1 })
 
-            //     expect(balance1_2).to.be.equal(amount1)
-            //     expect(balance2_2).to.be.equal(amount1)
+            //     // console.log({ balance1_2, balance2_2 })
 
-            // });
+            //     // console.log({pair1, pair2})
 
-            // it("Both reserve should be updated as required", async function () {
+            //     // console.log(await pair1Contract.remoteAddress())
 
-            //     const { mockMailbox, pair1Contract, pair2Contract, owner } = await loadFixture(deploy);
+            //     // console.log(await pair2Contract.remoteAddress())
 
-            //     await pair2Contract.addLiquidity(amount1, amount2, gasAmount, owner.address, { value: gas})
+            //     console.log(await pair2Contract.reserve1())
 
-            //     mockMailbox.processNextInboundMessage()
+            //     console.log(await pair2Contract.reserve2())
 
-            //     await pair1Contract.addLiquidity(amount2, amount1, gasAmount, owner.address, { value: gas})
 
-            //     mockMailbox.processNextInboundMessage()
 
-            //     expect(await pair1Contract.reserve1()).to.be.equal(amount2)
 
-            //     expect(await pair1Contract.reserve2()).to.be.equal(amount1)
-
-            //     expect(await pair1Contract.kValue()).to.be.equal(BigInt(amount1 as any) * BigInt(amount2 as any))
-
-            //     expect(await pair2Contract.reserve1()).to.be.equal(amount1)
-
-            //     expect(await pair2Contract.reserve2()).to.be.equal(amount2)
-
-            //     expect(await pair2Contract.kValue()).to.be.equal(BigInt(amount1 as any) * BigInt(amount2 as any))
+            //     // expect(balance1_1).to.be.equal(balance1)
+            //     // expect(balance2_1).to.be.greaterThan(balance2)
+            //     // expect(balance1_2).to.be.lessThan(balance1)
+            //     // expect(balance2_2).to.be.greaterThan(balance2)
 
             // });
-
-        })
-
-    })
-
-
-    // describe("Swaping Assets", function () {
-
-    //     describe("Validations", function () {
-
-    //         it("Balances should update with right details during Swap from pair One", async function () {
-
-    //             const { mockMailbox, pair1, pair2, pair1Contract, owner } = await loadFixture(addLiquidity);
-
-    //             const balance1 = await ethers.provider.getBalance(pair1);
-    //             const balance2 = await ethers.provider.getBalance(pair2);
-
-    //             const amountIn = ethers.utils.parseUnits("2", "ether");
-    //             const gas = ethers.utils.parseUnits("2.1", "ether");
-
-    //             await pair1Contract.swap(amountIn, 1000, owner.address, { value: gas})
-
-    //             const balance1_1 = await ethers.provider.getBalance(pair1);
-    //             const balance2_1 = await ethers.provider.getBalance(pair2);
-
-    //             mockMailbox.processNextInboundMessage()
-
-    //             const balance1_2 = await ethers.provider.getBalance(pair1);
-    //             const balance2_2 = await ethers.provider.getBalance(pair2);
-
-
-    //             expect(balance1_1).to.be.greaterThan(balance1)
-    //             expect(balance2_1).to.be.equal(balance2)
-    //             expect(balance1_2).to.be.greaterThan(balance1)
-    //             expect(balance2_2).to.be.lessThan(balance2)
-
-    //         });
-
-
-    //         it("Balances should update with right details during Swap from pair Two", async function () {
-
-    //             const { pair1, pair2, pair2Contract, one, mockMailbox } = await loadFixture(addLiquidity);
-
-    //             const balance1 = await ethers.provider.getBalance(pair1);
-    //             const balance2 = await ethers.provider.getBalance(pair2);
-
-    //             const amountIn = ethers.utils.parseUnits("1", "ether");
-    //             const gas = ethers.utils.parseUnits("1.1", "ether");
-
-    //             await pair2Contract.swap(amountIn, amountIn, one.address, { value: gas})
-
-    //             const balance1_1 = await ethers.provider.getBalance(pair1);
-    //             const balance2_1 = await ethers.provider.getBalance(pair2);
-
-    //             mockMailbox.processNextInboundMessage()
-
-    //             const balance1_2 = await ethers.provider.getBalance(pair1);
-    //             const balance2_2 = await ethers.provider.getBalance(pair2);
-
-
-    //             // console.log({ balance1, balance2 })
-
-    //             // console.log({ balance1_1, balance2_1 })
-
-    //             // console.log({ balance1_2, balance2_2 })
-
-    //             // console.log({pair1, pair2})
-
-    //             // console.log(await pair1Contract.remoteAddress())
-
-    //             // console.log(await pair2Contract.remoteAddress())
-
-    //             console.log(await pair2Contract.reserve1())
-
-    //             console.log(await pair2Contract.reserve2())
-
-
-
-
-    //             expect(balance1_1).to.be.equal(balance1)
-    //             expect(balance2_1).to.be.greaterThan(balance2)
-    //             //expect(balance1_2).to.be.lessThan(balance1)
-    //             expect(balance2_2).to.be.greaterThan(balance2)
-
-    //         });
 
 
 
@@ -520,8 +521,8 @@ describe("Liquidity Pool", function () {
 
     //         });
 
-    //     })
+        })
 
-    //  });
+    });
 
 });

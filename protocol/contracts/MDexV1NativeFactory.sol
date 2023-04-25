@@ -101,12 +101,12 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
         }
 
-        pair = contractFactory(_remoteDomain, address(0));
+        pair = contractFactory(_remoteDomain, _remoteAddress);
 
         bytes32 messageId = IMailbox(mailbox).dispatch(
             _remoteDomain,
             _remoteAddress.addressToBytes32(),
-            abi.encodeWithSignature("createPairReceiver(uint32,uint256,uint256,address)", LOCAL_DOMAIN, _amountIn1, _amountIn2, pair)
+            abi.encodeWithSignature("createPairReceiver(uint32,uint256,uint256,address,address)", LOCAL_DOMAIN, _amountIn1, _amountIn2, msg.sender, address(this))
         );
 
         {
@@ -132,44 +132,68 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
             abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint32,uint256,uint256,address,address)", _generateId(msg.sender), LOCAL_DOMAIN, _amountIn1, _amountIn2, msg.sender, address(this))
         );
 
-        payForGas(messageId, _remoteDomain, _gasAmount, _getGas(_amountIn1));
-
         address pair = getPair[LOCAL_DOMAIN][_remoteDomain];
+        
+        {
+            (bool success, ) = payable(pair).call{ value: _amountIn1}("");
+
+            if (!success) revert("MDEX: Transaction Failed");
+        }
+
+        payForGas(messageId, _remoteDomain, _gasAmount, _getGas(_amountIn1));
 
         IMDexV1PairNative(pair).addLiquidityCore(_generateId(msg.sender), _amountIn1, _amountIn2, msg.sender);   
 
     }
 
 
+    function swap(uint32 _remoteDomain, uint _amountIn, uint _gasAmount, address _to, address _remoteAddress) external payable {
+
+        address pair = getPair[LOCAL_DOMAIN][_remoteDomain];
+
+        uint amountOut = IMDexV1PairNative(pair).swapCore(_amountIn, _to);
+
+        console.log(amountOut, _to);
+
+        bytes32 messageId = mailbox.dispatch(
+            _remoteDomain,
+            _remoteAddress.addressToBytes32(),
+            abi.encodeWithSignature("swapReceiver(uint32,uint256,address)", LOCAL_DOMAIN, amountOut, _to)
+        );
+
+        {
+            (bool success, ) = payable(pair).call{ value: _amountIn}("");
+
+            if (!success) revert("MDEX: Transaction Failed");
+        }
+
+        payForGas(messageId, _remoteDomain, _gasAmount, _getGas(_amountIn));
+
+    }
+
+
     // =========== Receivers =============
 
-    function createPairReceiver(uint32 _remoteDomain,  uint256 _amountIn1, uint256 _amountIn2,  address _remoteAddress) external onlyMailbox returns (address pair) {
+    function createPairReceiver(uint32 _remoteDomain,  uint256 _amountIn1, uint256 _amountIn2,  address _owner, address _remoteAddress) external onlyMailbox returns (address pair) {
+        
         pair = contractFactory(_remoteDomain,  _remoteAddress);
-            
-        IMDexV1PairNative(pair).addLiquidityCore(_generateId(msg.sender), _amountIn2, _amountIn1, msg.sender);   
 
-        console.log("done");
+        IMDexV1PairNative(pair).addLiquidityCore(_generateId(_owner), _amountIn2, _amountIn1, _owner);   
+
         emit PairCreated(_remoteDomain, _remoteAddress, pair, allPairs.length);
     }
 
     function addLiquidityReceiver(bytes32 _id, uint32 _remoteDomain, uint256 _amountIn1, uint256 _amountIn2, address _sender, address _remoteAddress) external onlyMailbox {
-        
-        console.log("RECEIVED", _remoteDomain, _remoteAddress);
 
         address pair = getPair[LOCAL_DOMAIN][_remoteDomain];
 
-        IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, _sender);   
+        IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _sender);   
 
     }
 
-    function swapReceiver(uint256 _amountIn, address  _to) external onlyMailbox  {
-
-        // uint amountOut = getPrice(_amountIn);
-
-        // (bool success, ) = payable(_to).call{value: amountOut}("MDEX: SWAP_SUCCESSFUL");
-
-        // if (!success) revert("MDEX: SWAP_FAILED");
-
+    function swapReceiver(uint32 _remoteDomain, uint256 _amountOut, address _to) external onlyMailbox  {
+        address pair = getPair[LOCAL_DOMAIN][_remoteDomain];
+        IMDexV1PairNative(pair).swapPay(_amountOut, _to);
     }
 
     // gas payment
@@ -191,6 +215,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
     // hyperlane message handler
     function handle(uint32 _origin, bytes32 _sender, bytes calldata _body) external onlyMailbox  {        
+        console.log("Dd");
         address sender = _sender.bytes32ToAddress();
         (bool success,) = address(this).delegatecall(_body);
         if (!success) revert("MDEX: Transaction Failed");

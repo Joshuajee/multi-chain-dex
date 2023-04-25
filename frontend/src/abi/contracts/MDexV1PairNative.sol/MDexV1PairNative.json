@@ -237,34 +237,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_amountIn",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountIn2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gasAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
-      }
-    ],
-    "name": "addLiquidity",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "id",
         "type": "bytes32"
@@ -286,39 +258,6 @@
       }
     ],
     "name": "addLiquidityCore",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountIn",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountIn2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_remoteAddress",
-        "type": "address"
-      }
-    ],
-    "name": "addLiquidityReceiver",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -547,29 +486,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
-        "name": "_origin",
-        "type": "uint32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_sender",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_body",
-        "type": "bytes"
-      }
-    ],
-    "name": "handle",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_mailbox",
         "type": "address"
@@ -746,30 +662,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_destinationDomain",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gasAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "quoteGasPayment",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "remoteAddress",
     "outputs": [
@@ -780,24 +672,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountIn",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      }
-    ],
-    "name": "removeLiquidity",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -904,31 +778,8 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_gasAmount",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_to",
-        "type": "address"
-      }
-    ],
-    "name": "swap",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountIn",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
         "type": "address"
       }
     ],
@@ -947,7 +798,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_amountIn",
+        "name": "_amountOut",
         "type": "uint256"
       },
       {
@@ -956,7 +807,7 @@
         "type": "address"
       }
     ],
-    "name": "swapReceiver",
+    "name": "swapPay",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
