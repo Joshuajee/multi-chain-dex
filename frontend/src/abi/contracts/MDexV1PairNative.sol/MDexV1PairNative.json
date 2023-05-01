@@ -166,6 +166,23 @@
     "type": "event"
   },
   {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
+  {
+    "inputs": [],
+    "name": "FEE",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "LOCAL_DOMAIN",
     "outputs": [
@@ -193,6 +210,19 @@
   },
   {
     "inputs": [],
+    "name": "PERCENT",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "REMOTE_DOMAIN",
     "outputs": [
       {
@@ -207,60 +237,46 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      },
+      {
         "internalType": "uint256",
-        "name": "_amountIn",
+        "name": "amountIn1",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_amountIn2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gasAmount",
+        "name": "amountIn2",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "_sender",
+        "name": "sender",
         "type": "address"
       }
     ],
-    "name": "addLiquidity",
-    "outputs": [],
-    "stateMutability": "payable",
+    "name": "addLiquidityCore",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      },
-      {
         "internalType": "uint256",
-        "name": "_amountIn",
+        "name": "_positionId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountIn2",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_remoteAddress",
-        "type": "address"
       }
     ],
-    "name": "addLiquidityReceiver",
+    "name": "collectFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -273,6 +289,191 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "generateId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getClosedPositionsByAddress",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getOpenedPositionsByAddress",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getPendingPositionsByAddress",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPositions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -323,29 +524,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
-        "name": "_origin",
-        "type": "uint32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_sender",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_body",
-        "type": "bytes"
-      }
-    ],
-    "name": "handle",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_mailbox",
         "type": "address"
@@ -353,11 +531,6 @@
       {
         "internalType": "address",
         "name": "_interchainGasPaymaster",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_interchainSecurityModule",
         "type": "address"
       }
     ],
@@ -527,30 +700,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_destinationDomain",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gasAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "quoteGasPayment",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "remoteAddress",
     "outputs": [
@@ -576,8 +725,14 @@
         "type": "address"
       }
     ],
-    "name": "removeLiquidity",
-    "outputs": [],
+    "name": "removeLiquidityCore",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -661,26 +816,27 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_gasAmount",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_to",
         "type": "address"
       }
     ],
-    "name": "swap",
-    "outputs": [],
-    "stateMutability": "payable",
+    "name": "swapCore",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_amountIn",
+        "name": "_amountOut",
         "type": "uint256"
       },
       {
@@ -689,7 +845,7 @@
         "type": "address"
       }
     ],
-    "name": "swapReceiver",
+    "name": "swapPay",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -706,5 +862,9 @@
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

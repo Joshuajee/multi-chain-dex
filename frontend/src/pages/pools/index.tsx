@@ -1,21 +1,30 @@
-import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
 import { CHAIN_ID, ROUTES } from '@/libs/enums'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { Address, useAccount, useContractRead } from 'wagmi'
+import { convertToEther, convertToWEI, isAddressZero, supportedNetworks } from '@/libs/utils'
+import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
+
 
 
 export default function Pools() {
 
     const router = useRouter()
 
-    const [valueFrom, setValueFrom] = useState("")
-    const [valueTo, setValueTo] = useState("")
+    const { address, isConnected } = useAccount()
 
-    const [chainIdFrom, setChainIdFrom] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
-    const [chainIdTo, setChainIdTo] = useState<CHAIN_ID | string>(CHAIN_ID.MUMBAI)
+    const getPositions = useContractRead({
+        address: supportedNetworks[1].factoryAddress as Address,
+        abi: MDexV1NativeFactoryABI,
+        functionName: 'getUserOpenPositions',
+        enabled: isConnected,
+        args: [address],
+    })
 
+    console.log(supportedNetworks[1].name)
+    console.log(getPositions)
 
     return (
         <Layout>

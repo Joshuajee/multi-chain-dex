@@ -1,7 +1,7 @@
 import { ethers } from "ethers"
 import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
-import { CHAIN_ID, DOMAIN_ID } from "./enums"
+import { CHAIN_ID, DOMAIN_ID, FACTORY_ADDRESS } from "./enums"
 import { SUPPORTED_NETWORKS } from "./interfaces"
 
 export const dollarFormat = (amount: number) => {
@@ -84,7 +84,10 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         icon: "",
         chainId: CHAIN_ID.NONE,
         domainId: DOMAIN_ID.NONE,
-        mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
+        factoryAddress: FACTORY_ADDRESS.NONE,
+        symbol: "",
+        createGas: 10000000,
+        addGas: 100000
     },
     {
         name: "Mumbai",
@@ -93,6 +96,8 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.MUMBAI,
         domainId: DOMAIN_ID.MUMBAI,
         mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
+        factoryAddress: FACTORY_ADDRESS.MUMBAI,
+        symbol: "MATIC",
     },
     {
         name: "Goerli",
@@ -101,6 +106,8 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.GOERLI,
         domainId: DOMAIN_ID.GOERLI,
         mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
+        factoryAddress: FACTORY_ADDRESS.GOERLI,
+        symbol: "GOERLI ETH",
     },
     {
         name: "BNB Testnet",
@@ -109,6 +116,8 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.BNB_TEST,
         domainId: DOMAIN_ID.BNB_TEST,
         mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
+        factoryAddress: FACTORY_ADDRESS.BNB_TEST,
+        symbol: "BNB",
     }
 
 ]

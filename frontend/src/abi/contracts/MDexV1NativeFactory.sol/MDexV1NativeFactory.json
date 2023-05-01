@@ -19,31 +19,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "messageId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gasAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "payment",
-        "type": "uint256"
-      }
-    ],
-    "name": "GasPayment",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": false,
         "internalType": "uint8",
         "name": "version",
@@ -183,6 +158,77 @@
   {
     "inputs": [
       {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gasAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "addLiquidity",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "addLiquidityReceiver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -213,11 +259,34 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "clonefactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint32",
         "name": "_remoteDomain",
         "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -247,6 +316,21 @@
         "internalType": "uint32",
         "name": "_remoteDomain",
         "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -292,6 +376,114 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getUserClosedPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "remoteAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getUserOpenPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "remoteAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getUserPendingPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "remoteAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint32",
         "name": "_origin",
         "type": "uint32"
@@ -322,11 +514,6 @@
       {
         "internalType": "address",
         "name": "_interchainGasPaymaster",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_interchainSecurityModule",
         "type": "address"
       }
     ],
@@ -405,9 +592,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "_refundAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_gas",
+        "type": "uint256"
       }
     ],
     "name": "payForGas",
@@ -488,20 +675,62 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "supportedChainId",
-    "outputs": [
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "_amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gasAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "swap",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountOut",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "swapReceiver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -515,6 +744,108 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userClosedPositions",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "positionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "remoteAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userOpenPositions",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "positionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "remoteAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userPendingPositions",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "positionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "remoteAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]
