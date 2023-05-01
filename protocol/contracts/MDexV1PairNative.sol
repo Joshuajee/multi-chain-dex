@@ -77,6 +77,14 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
         _blockTimestampLast = blockTimestampLast;
     }
 
+    function generateId(address _sender) external view returns (bytes32) {
+        return keccak256(abi.encodePacked(_sender, positionCounter));
+    }
+
+    function getPositions() external view returns (uint) {
+        return positionCounter;
+    }
+
     function collectFee(uint _positionId) public lock {
         LiquidityToken storage myPosition = positions[_positionId];
         if (myPosition.owner != msg.sender) revert("MDEX: NOT OWNER");
@@ -101,11 +109,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
         return msg.value - _amount;
     }
 
-    function _generateId(address _sender) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(_sender, positionCounter));
-    }
-
-    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) external onlyFactory {
+    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) external onlyFactory returns (uint) {
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
@@ -114,19 +118,25 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
             myPendingPositions.add(sender, positionCounter);
             pendingPosition[sender] = positionCounter;
 
+            return positionCounter;
+
         } else {
 
+            uint currentPosition = pendingPosition[sender];
+
             // Adding to liquidity and removing from pending
-            openPositionArray.push(pendingPosition[sender]);
-            myOpenedPositions.add(sender, pendingPosition[sender]);
-            myPendingPositions.remove(sender, pendingPosition[sender]);
-            reserve1 += positions[pendingPosition[sender]].amountIn1;
-            reserve2 += positions[pendingPosition[sender]].amountIn2;
+            openPositionArray.push(currentPosition);
+            myOpenedPositions.add(sender, currentPosition);
+            myPendingPositions.remove(sender, currentPosition);
+            reserve1 += positions[currentPosition].amountIn1;
+            reserve2 += positions[currentPosition].amountIn2;
 
             //pricing             
             kValue = (reserve1) * (reserve2);
 
             delete pendingPosition[sender];
+
+            return currentPosition;
         }
 
     }
@@ -202,15 +212,12 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
    
         if (_amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
 
-        console.log(reserve1, reserve2);
-
         payerInvestor(_amountIn);
 
         emit Swap(_to, _amountIn, amountOut);
     }
 
     function swapPay(uint _amountOut, address _to) external onlyFactory {
-        console.log("addr", _to, _amountOut);
         (bool success, ) = payable(_to).call{value: _amountOut}("MDEX: SWAP_SUCCESSFUL");
         if (!success) revert("MDEX: SWAP_FAILED");
     }
@@ -223,7 +230,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
 
             LiquidityToken storage position = positions[i];
             
-            uint payOut = (PERCENT * position.amountIn1 * fee) / reserve1;
+            uint payOut = (position.amountIn1 * fee) / reserve1;
 
             position.availableFees += payOut;
 

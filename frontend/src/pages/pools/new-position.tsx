@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
 import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
-import { convertToEther, isAddressZero, supportedNetworks } from '@/libs/utils'
+import { convertToEther, convertToWEI, isAddressZero, supportedNetworks } from '@/libs/utils'
 import LoadingButton from '@/components/utils/LoadingButton'
 import { CHAIN_ID,  GAS_FEES } from '@/libs/enums'
 import { SUPPORTED_NETWORKS } from '@/libs/interfaces'
@@ -33,6 +33,10 @@ export default function NewPosition() {
     const [pair1Details, setPair1Details] = useState<SUPPORTED_NETWORKS>(supportedNetworks[pairIndex1 as number])
     const [pair2Details, setPair2Details] = useState<SUPPORTED_NETWORKS>(supportedNetworks[pairIndex2 as number])
 
+    const [hasSelected, setHasSelected] = useState(false)
+
+    const [payment1, setPayment1] = useState<any>()
+    const [payment2, setPayment2] = useState<any>()
 
     const pair1 = useContractRead({
         address: pair1Details.factoryAddress as Address,
@@ -60,16 +64,52 @@ export default function NewPosition() {
         enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
     })
 
+    //0.001473 
+    const gasQuotes1 = useContractRead({
+        address: pair1Details.factoryAddress as Address,
+        abi: MDexV1NativeFactoryABI,
+        functionName: 'quoteGasPayment',
+        args: [pair2Details.domainId, GAS_FEES.ADD_LIQUIDITY],
+        chainId: pair1Details.chainId,
+        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
+    })
+    const gasQuotes2 = useContractRead({
+        address: pair2Details.factoryAddress as Address,
+        abi: MDexV1NativeFactoryABI,
+        functionName: 'quoteGasPayment',
+        args: [pair1Details.domainId, GAS_FEES.ADD_LIQUIDITY],
+        chainId: pair2Details.chainId,
+        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
+    })
+
     const createPair = useContractWrite({
         mode: 'recklesslyUnprepared',
         address: pair1Details.factoryAddress as Address,
         abi: MDexV1NativeFactoryABI,
         functionName: 'createPair',
-        args: [pair2Details.domainId, GAS_FEES.CREATE, pair2Details.factoryAddress, { value: gasQuotes.data }],
+        args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.CREATE, pair2Details.factoryAddress, { value: payment1 }],
         chainId: pair1Details.chainId,
     })
 
-    // const createPair = useContractWrite(createPairPrep.config)
+    const addLiquidity1 = useContractWrite({
+        mode: 'recklesslyUnprepared',
+        address: pair1Details.factoryAddress as Address,
+        abi: MDexV1NativeFactoryABI,
+        functionName: 'addLiquidity',
+        args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.ADD_LIQUIDITY, pair2Details.factoryAddress, { value: payment1 }],
+        chainId: pair1Details.chainId,
+    })
+
+    const addLiquidity2 = useContractWrite({
+        mode: 'recklesslyUnprepared',
+        address: pair2Details.factoryAddress as Address,
+        abi: MDexV1NativeFactoryABI,
+        functionName: 'addLiquidity',
+        args: [pair1Details.domainId, convertToWEI(amount2 as number), convertToWEI(amount1 as number), GAS_FEES.ADD_LIQUIDITY, pair1Details.factoryAddress, { value: payment2 }],
+        chainId: pair2Details.chainId,
+    })
+
+    console.log(pair1Details.domainId, " === ",pair2Details.factoryAddress,  pair1Details.chainId)
 
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex1(e.target.value)
@@ -90,6 +130,33 @@ export default function NewPosition() {
     useEffect(() => {
         setPair2Details(supportedNetworks[pairIndex2 as number])
     }, [pairIndex2])
+
+    useEffect(() => {
+        const gaspay = gasQuotes?.data //+ convertToWEI(amount1 as number) 
+
+        const gaspay2 = gasQuotes2?.data 
+
+        if (gaspay) {
+            const value = BigInt(gaspay as any) + BigInt(convertToWEI(amount1 as number) as any)
+            const value2 = BigInt(gaspay2 as any) + BigInt(convertToWEI(amount2 as number) as any)
+            console.log(value)
+            setPayment1(value)
+            setPayment2(value2)
+        }
+        //setGas()
+    }, [gasQuotes?.data, gasQuotes2?.data, amount1, amount2])
+
+    useEffect(() => {
+        setHasSelected(tokenSelected(pair1Details.chainId, pair2Details.chainId) as boolean)
+    }, [pair1Details.chainId, pair2Details.chainId])
+
+    console.log(pair1.data)
+    console.log(pair2.data)
+
+    console.log(addLiquidity2)
+
+
+
 
     return (
         <Layout>
@@ -122,16 +189,19 @@ export default function NewPosition() {
                                         
                                         <p>You will earn 1% in fees</p>
 
-                                        <p className='mt-2 font-semibold'>
-                                            Gas Fee: 
-                                            <strong className='ml-2'> {Number(convertToEther(gasQuotes?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
-                                        </p>
+                                        {
+                                            isAddressZero(pair1?.data as Address) && isAddressZero(pair2?.data as Address) &&
+                                                <p className='mt-2 font-semibold'>
+                                                    Gas Fee: 
+                                                    <strong className='ml-2'> {Number(convertToEther(gasQuotes?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
+                                                </p>
+                                        }
 
                                         {   Number(amount1) > 0 && Number(amount2) > 0 &&
                                             <p className='mt-2 font-semibold'>
                                                 Price: 
                                                 <strong className='ml-2'> 
-                                                    1 {pair1Details.symbol} = 
+                                                    1 {pair1Details.symbol} =  
                                                     { (Number(amount2) / Number(amount1))} {pair2Details.symbol} 
                                                 </strong>
                                             </p>
@@ -153,6 +223,43 @@ export default function NewPosition() {
                                             </LoadingButton>
                                     }
                                 </div>
+                                { hasSelected &&
+                                    <>
+                                        <div>
+                                            {
+                                                !isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address) &&
+                                                <>    
+                                                    <p className='mt-2 font-semibold'>
+                                                        Gas Fee: 
+                                                        <strong className='ml-2'> {Number(convertToEther(gasQuotes1?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
+                                                    </p>
+                                                    <LoadingButton 
+                                                        loading={addLiquidity1.isLoading} 
+                                                        onClick={() => addLiquidity1?.write?.()}> Add Liquidity {pair1Details.name}
+                                                    </LoadingButton>
+                                                </>
+                                            }
+                                        </div>
+
+                                        <div>
+                                            {
+                                                !isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address) &&
+                                                    <>
+
+                                                        <p className='mt-2 font-semibold'>
+                                                            Gas Fee: 
+                                                            <strong className='ml-2'> {Number(convertToEther(gasQuotes2?.data as number)).toFixed(4)} {pair2Details.symbol} </strong>
+                                                        </p>
+                                                        <LoadingButton 
+                                                            loading={addLiquidity2.isLoading} 
+                                                            onClick={() => addLiquidity2?.write?.()}> Add Liquidity {pair2Details.name}
+                                                        </LoadingButton>
+
+                                                    </>
+                                            }
+                                        </div>
+                                    </>
+                                }
 
                             </div>
 

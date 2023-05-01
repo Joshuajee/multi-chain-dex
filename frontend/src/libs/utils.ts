@@ -85,7 +85,9 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.NONE,
         domainId: DOMAIN_ID.NONE,
         factoryAddress: FACTORY_ADDRESS.NONE,
-        symbol: ""
+        symbol: "",
+        createGas: 10000000,
+        addGas: 100000
     },
     {
         name: "Mumbai",
@@ -95,7 +97,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         domainId: DOMAIN_ID.MUMBAI,
         mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
         factoryAddress: FACTORY_ADDRESS.MUMBAI,
-        symbol: "MATIC"
+        symbol: "MATIC",
     },
     {
         name: "Goerli",
@@ -105,7 +107,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         domainId: DOMAIN_ID.GOERLI,
         mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
         factoryAddress: FACTORY_ADDRESS.GOERLI,
-        symbol: "GOERLI ETH"
+        symbol: "GOERLI ETH",
     },
     {
         name: "BNB Testnet",
@@ -115,7 +117,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         domainId: DOMAIN_ID.BNB_TEST,
         mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
         factoryAddress: FACTORY_ADDRESS.BNB_TEST,
-        symbol: "BNB"
+        symbol: "BNB",
     }
 
 ]
