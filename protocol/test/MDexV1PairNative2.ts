@@ -114,6 +114,7 @@ describe("Liquidity Pool Test", function () {
 
             const pending2 = await mDexV1NativeFactory2.getUserPendingPositions(owner.address)
 
+
             expect(opened1.length).to.be.equal(opened2.length)
 
             expect(pending1.length).to.be.equal(0)
@@ -138,6 +139,8 @@ describe("Liquidity Pool Test", function () {
 
             const pending2 = await mDexV1NativeFactory2.getUserPendingPositions(one.address)
 
+            console.log({pending1, pending2})
+
             expect(opened1.length).to.be.equal(0)
 
             expect(opened2.length).to.be.equal(0)
@@ -145,6 +148,7 @@ describe("Liquidity Pool Test", function () {
             expect(pending1.length).to.be.equal(1)
 
             expect(pending2.length).to.be.equal(1)
+
 
         });
 

@@ -10,7 +10,7 @@ import "./libs/Liquidity.sol";
 import "hardhat/console.sol";
 
 
-contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INonfungibleNativeLiquidity {
+contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
     //Events
     event Swap(address indexed to, uint amountIn, uint amountOut);
@@ -79,6 +79,10 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
 
     function generateId(address _sender) external view returns (bytes32) {
         return keccak256(abi.encodePacked(_sender, positionCounter));
+    }
+
+    function getPosition(uint _tokenId) external view returns (LiquidityToken memory) {
+        return positions[_tokenId];
     }
 
     function getPositions() external view returns (uint) {

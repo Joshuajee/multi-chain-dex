@@ -15,6 +15,7 @@ interface IMDexV1NativeFactory is INonfungibleNativeLiquidity {
         uint32 remoteDomain;
         uint positionId;
         address remoteAddress;
+        address pair;
     }
 
 }

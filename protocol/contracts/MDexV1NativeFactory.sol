@@ -60,12 +60,12 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
         return allPairs.length;
     }
 
-    function addPosition(uint32 _remoteDomain, uint _positionId, address _sender, address _remoteAddress) internal {
+    function addPosition(uint32 _remoteDomain, uint _positionId, address _sender, address _remoteAddress, address _pair) internal {
         bool found = false;
         uint length = userPendingPositions[_sender].length;
         for (uint i = 0; i < length; ) {
             if (userPendingPositions[_sender][i].positionId == _positionId) {
-                userOpenPositions[_sender].push(Position(_remoteDomain, _positionId, _remoteAddress));
+                userOpenPositions[_sender].push(Position(_remoteDomain, _positionId, _remoteAddress, _pair));
                 found = true;
                 //remove from pending list
                 userPendingPositions[_sender][i] = userOpenPositions[_sender][length - 1];
@@ -76,7 +76,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
                 ++i;
             }
         }
-        if (!found) userPendingPositions[_sender].push(Position(_remoteDomain, _positionId, _remoteAddress));
+        if (!found) userPendingPositions[_sender].push(Position(_remoteDomain, _positionId, _remoteAddress, _pair));
     }
 
     function contractFactory (uint32 _remoteDomain, address _remoteAddress) internal returns (address pair) {
@@ -94,16 +94,71 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
     }
 
-    function getUserOpenPositions(address _owner) external view returns (Position[] memory) {
-        return userOpenPositions[_owner];
+    function getUserOpenPositions(address _owner) external view returns (LiquidityToken[] memory) {
+        
+        uint length = userOpenPositions[_owner].length;
+
+        LiquidityToken[] memory liquidityToken = new LiquidityToken[](length);
+    
+        for (uint i = 0; i < length; ) {
+
+            uint position = userOpenPositions[_owner][i].positionId;
+            address pair = userOpenPositions[_owner][i].pair;
+
+            liquidityToken[i] = IMDexV1PairNative(pair).getPosition(position);
+
+            unchecked {
+                ++i;
+            }
+
+        }
+
+        return liquidityToken;
+
     }
 
-    function getUserPendingPositions(address _owner) external view returns (Position[] memory) {
-        return userPendingPositions[_owner];
+    function getUserPendingPositions(address _owner) external view returns (LiquidityToken[] memory) {
+        
+        uint length = userPendingPositions[_owner].length;
+
+        LiquidityToken[] memory liquidityToken = new LiquidityToken[](length);
+    
+        for (uint i = 0; i < length; ) {
+
+            uint position = userPendingPositions[_owner][i].positionId;
+            address pair = userPendingPositions[_owner][i].pair;
+
+            liquidityToken[i] = IMDexV1PairNative(pair).getPosition(position);
+
+            unchecked {
+                ++i;
+            }
+
+        }
+
+        return liquidityToken;
     }
 
-    function getUserClosedPositions(address _owner) external view returns (Position[] memory) {
-        return userClosedPositions[_owner];
+    function getUserClosedPositions(address _owner) external view returns (LiquidityToken[] memory) {
+
+        uint length = userClosedPositions[_owner].length;
+
+        LiquidityToken[] memory liquidityToken = new LiquidityToken[](length);
+    
+        for (uint i = 0; i < length; ) {
+
+            uint position = userClosedPositions[_owner][i].positionId;
+            address pair = userClosedPositions[_owner][i].pair;
+
+            liquidityToken[i] = IMDexV1PairNative(pair).getPosition(position);
+
+            unchecked {
+                ++i;
+            }
+
+        }
+
+        return liquidityToken;
     }
 
     function createPair(
@@ -144,7 +199,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
             
             payForGas(messageId, _remoteDomain, _gasAmount,  msg.value - _amountIn1);
             
-            addPosition(_remoteDomain, position,  msg.sender,_remoteAddress);
+            addPosition(_remoteDomain, position,  msg.sender,_remoteAddress, pair);
 
             emit PairCreated(_remoteDomain, _remoteAddress, pair, allPairs.length);
 
@@ -175,7 +230,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
         uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, msg.sender);   
     
-        addPosition(_remoteDomain, position, msg.sender, _remoteAddress);
+        addPosition(_remoteDomain, position, msg.sender, _remoteAddress, pair);
     }
 
 
@@ -211,7 +266,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
         uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _owner); 
         
-        addPosition(_remoteDomain, position, _owner, _remoteAddress); 
+        addPosition(_remoteDomain, position, _owner, _remoteAddress, pair); 
 
         emit PairCreated(_remoteDomain, _remoteAddress, pair, allPairs.length);
     }
@@ -221,7 +276,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
         
         uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _sender);   
 
-        addPosition(_remoteDomain, position, _sender, _remoteAddress); 
+        addPosition(_remoteDomain, position, _sender, _remoteAddress, pair); 
     }
 
     function swapReceiver(uint32 _remoteDomain, uint256 _amountOut, address _to, address _remoteAddress) external onlyMailbox  {

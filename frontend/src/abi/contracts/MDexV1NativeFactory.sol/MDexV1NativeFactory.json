@@ -386,22 +386,37 @@
       {
         "components": [
           {
-            "internalType": "uint32",
-            "name": "remoteDomain",
-            "type": "uint32"
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
           },
           {
             "internalType": "uint256",
-            "name": "positionId",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
             "type": "uint256"
           },
           {
             "internalType": "address",
-            "name": "remoteAddress",
+            "name": "owner",
             "type": "address"
           }
         ],
-        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -422,22 +437,37 @@
       {
         "components": [
           {
-            "internalType": "uint32",
-            "name": "remoteDomain",
-            "type": "uint32"
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
           },
           {
             "internalType": "uint256",
-            "name": "positionId",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
             "type": "uint256"
           },
           {
             "internalType": "address",
-            "name": "remoteAddress",
+            "name": "owner",
             "type": "address"
           }
         ],
-        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -458,22 +488,37 @@
       {
         "components": [
           {
-            "internalType": "uint32",
-            "name": "remoteDomain",
-            "type": "uint32"
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
           },
           {
             "internalType": "uint256",
-            "name": "positionId",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
             "type": "uint256"
           },
           {
             "internalType": "address",
-            "name": "remoteAddress",
+            "name": "owner",
             "type": "address"
           }
         ],
-        "internalType": "struct IMDexV1NativeFactory.Position[]",
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -775,6 +820,11 @@
         "internalType": "address",
         "name": "remoteAddress",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pair",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -809,6 +859,11 @@
         "internalType": "address",
         "name": "remoteAddress",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pair",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -842,6 +897,11 @@
       {
         "internalType": "address",
         "name": "remoteAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pair",
         "type": "address"
       }
     ],
