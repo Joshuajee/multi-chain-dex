@@ -383,9 +383,9 @@ describe("Liquidity Pool", function () {
                 //console.log(BigInt(amount as any).plus() )
                 //expect(await pair1Contract.positions(1)).to.be.equal(BigInt(amount1 as any) * BigInt(1) * BigInt(amountIn as any) * / total)
 
-                // console.log(await pair1Contract.positions(1))
+                console.log(await pair1Contract.positions(1))
 
-                // console.log(await pair1Contract.positions(2))
+                console.log(await pair1Contract.positions(2))
 
                 // console.log(await pair1Contract.positions(3))
 

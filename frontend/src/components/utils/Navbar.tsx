@@ -5,7 +5,6 @@ import Connection from "@/components/connection"
 
 const navs = [
     { name: "SWAP", link: ROUTES.SWAP},
-    { name: "TOKENS", link: ROUTES.TOKENS},
     { name: "POOLS", link: ROUTES.POOLS}
 ]
 

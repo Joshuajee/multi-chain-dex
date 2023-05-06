@@ -114,7 +114,6 @@ describe("Liquidity Pool Test", function () {
 
             const pending2 = await mDexV1NativeFactory2.getUserPendingPositions(owner.address)
 
-
             expect(opened1.length).to.be.equal(opened2.length)
 
             expect(pending1.length).to.be.equal(0)
@@ -139,8 +138,6 @@ describe("Liquidity Pool Test", function () {
 
             const pending2 = await mDexV1NativeFactory2.getUserPendingPositions(one.address)
 
-            console.log({pending1, pending2})
-
             expect(opened1.length).to.be.equal(0)
 
             expect(opened2.length).to.be.equal(0)
@@ -149,6 +146,31 @@ describe("Liquidity Pool Test", function () {
 
             expect(pending2.length).to.be.equal(1)
 
+        });
+
+
+        it("Should be able to remove Liquidity", async function () {
+
+            const { mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, owner } = await loadFixture(deploy);
+
+            const opened1 = await mDexV1NativeFactory.getUserOpenPositions(owner.address)
+
+            const opened2 = await mDexV1NativeFactory2.getUserOpenPositions(owner.address)
+
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 1, 1000, mDexV1NativeFactory2.address, { value: 100 })
+
+            await mockMailbox2.processNextInboundMessage()
+
+            const opened1_2 = await mDexV1NativeFactory.getUserOpenPositions(owner.address)
+
+            const opened2_2 = await mDexV1NativeFactory2.getUserOpenPositions(owner.address)
+
+            expect(opened1_2.length).to.be.equal(opened1.length - 1)
+
+            expect(opened2_2.length).to.be.equal(opened2.length - 1)
+
+
+            //expect((await mDexV1NativeFactory.getUserOpenPositions(owner.address))[0]).to.be.equal((await mDexV1NativeFactory2.getUserOpenPositions(owner.address))[0])
 
         });
 

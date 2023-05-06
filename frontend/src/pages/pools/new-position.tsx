@@ -4,7 +4,7 @@ import Layout from '@/components/utils/Layout'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
-import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite } from 'wagmi'
+import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import { convertToEther, convertToWEI, isAddressZero, supportedNetworks } from '@/libs/utils'
 import LoadingButton from '@/components/utils/LoadingButton'
@@ -89,6 +89,11 @@ export default function NewPosition() {
         functionName: 'createPair',
         args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.CREATE, pair2Details.factoryAddress, { value: payment1 }],
         chainId: pair1Details.chainId,
+    })
+
+
+    const waitCreatePair = useWaitForTransaction({
+        hash: createPair.data as any,
     })
 
     const addLiquidity1 = useContractWrite({
@@ -218,7 +223,7 @@ export default function NewPosition() {
                                     {
                                         isAddressZero(pair1?.data as Address) && isAddressZero(pair2?.data as Address) &&
                                             <LoadingButton 
-                                                loading={createPair.isLoading} 
+                                                loading={createPair.isLoading || waitCreatePair.isLoading} 
                                                 onClick={() => createPair?.write?.()}> Create Pair 
                                             </LoadingButton>
                                     }

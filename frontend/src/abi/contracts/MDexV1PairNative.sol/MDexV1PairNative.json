@@ -255,6 +255,11 @@
         "internalType": "address",
         "name": "sender",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isPaying",
+        "type": "bool"
       }
     ],
     "name": "addLiquidityCore",
@@ -351,6 +356,11 @@
             "type": "uint256"
           },
           {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
+          },
+          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -400,6 +410,11 @@
             "internalType": "uint256",
             "name": "amountIn2",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
           },
           {
             "internalType": "address",
@@ -453,6 +468,11 @@
             "type": "uint256"
           },
           {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
+          },
+          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -502,6 +522,11 @@
             "internalType": "uint256",
             "name": "amountIn2",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
           },
           {
             "internalType": "address",
@@ -611,6 +636,32 @@
         "internalType": "contract IInterchainSecurityModule",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "investment1",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "investment2",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -742,6 +793,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "bool",
+        "name": "paid",
+        "type": "bool"
+      },
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"
@@ -767,21 +823,21 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "amountIn",
+        "name": "_position",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "from",
+        "name": "_owner",
         "type": "address"
       }
     ],
     "name": "removeLiquidityCore",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "amountOut",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "nonpayable",

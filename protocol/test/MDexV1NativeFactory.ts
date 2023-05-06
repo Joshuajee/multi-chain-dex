@@ -54,20 +54,20 @@ describe("MDexV1NativeFactory",  function () {
         await interchainGasPaymaster1.setExchangeRate(originDomain, 5)
         //End InterchainGasMaster
 
-        return { MockMailbox, mockSignature, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
+        return { MockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
     }
 
 
 
     async function initialize() {
 
-        const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
+        const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four} = await deploy()
 
         await mDexV1NativeFactory.initialize(mockMailbox.address, interchainGasPaymaster1.address)
 
-        await mDexV1NativeFactory2.initialize(mockSignature.address, interchainGasPaymaster2.address)
+        await mDexV1NativeFactory2.initialize(mockMailbox2.address, interchainGasPaymaster2.address)
 
-        return { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockSignature, owner, one, two, three, four};
+        return { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2, owner, one, two, three, four};
     }
 
     describe("Deployment", function () {
@@ -108,7 +108,7 @@ describe("MDexV1NativeFactory",  function () {
             it("Should revert if Factory has not been initialize", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
-                //await expect(mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })).to.be.revertedWith("!contract")
+                await expect(mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })).to.be.revertedWithoutReason()
                 
             });
 
@@ -140,26 +140,145 @@ describe("MDexV1NativeFactory",  function () {
                 
             });
 
-            // it("Should update pair contract balance and reserve", async function () {
-            //     const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox } = await loadFixture(initialize);
+            it("Should update pair contract balance and not update reserve", async function () {
 
-            //     await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox2 } = await loadFixture(initialize);
 
-            //     const address = await mDexV1NativeFactory.allPairs(0)
+                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
 
-            //     const balance = await ethers.provider.getBalance(address);
+                const address = await mDexV1NativeFactory.allPairs(0)
 
-            //     mockMailbox.processNextInboundMessage()
+                const balance = await ethers.provider.getBalance(address);
 
-            //     const pair1Contract = await ethers.getContractAt("MDexV1PairNative", address);
+                mockMailbox2.processNextInboundMessage()
 
-            //     expect(balance).to.be.equal(amount1)
+                const address2 = await mDexV1NativeFactory2.allPairs(0)
+
+                const balance2 = await ethers.provider.getBalance(address2);
+
+                const pair1Contract = await ethers.getContractAt("MDexV1PairNative", address);
+
+                const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
+
+                expect(balance).to.be.equal(amount1)
+
+                expect(await pair1Contract.reserve1()).to.be.equal(0)
+
+                expect(await pair1Contract.reserve2()).to.be.equal(0)
+
+                expect(balance2).to.be.equal(0)
+
+                expect(await pair2Contract.reserve1()).to.be.equal(0)
+
+                expect(await pair2Contract.reserve2()).to.be.equal(0)
+
+            });
+
+            it("Should update pair contract balance and not update reserve", async function () {
+
+                const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox2 } = await loadFixture(initialize);
+
+                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+
+                const address = await mDexV1NativeFactory.allPairs(0)
+
+                const balance = await ethers.provider.getBalance(address);
+
+                mockMailbox2.processNextInboundMessage()
+
+                const address2 = await mDexV1NativeFactory2.allPairs(0)
+
+                const balance2 = await ethers.provider.getBalance(address2);
+
+                const pair1Contract = await ethers.getContractAt("MDexV1PairNative", address);
+
+                const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
+
+                expect(balance).to.be.equal(amount1)
+
+                expect(await pair1Contract.reserve1()).to.be.equal(0)
+
+                expect(await pair1Contract.reserve2()).to.be.equal(0)
+
+                expect(balance2).to.be.equal(0)
+
+                expect(await pair2Contract.reserve1()).to.be.equal(0)
+
+                expect(await pair2Contract.reserve2()).to.be.equal(0)
+
+            });
 
 
-            //     console.log(await pair1Contract.reserve1())
+            it("Payment status should change appropriately when Creating Pair", async function () {
+
+                const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2 } = await loadFixture(initialize);
+
+                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+
+                const address = await mDexV1NativeFactory.allPairs(0)
+
+                await mockMailbox2.processNextInboundMessage()
+
+                const address2 = await mDexV1NativeFactory2.allPairs(0)
+
+                const pair1Contract = await ethers.getContractAt("MDexV1PairNative", address);
+
+                const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
+
+                // should be paid
+                expect((await pair1Contract.positions(1)).paid).to.be.equal(true)
+
+                // should not be unpaid
+                expect((await pair2Contract.positions(1)).paid).to.be.equal(false)
+
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+
+                await mockMailbox.processNextInboundMessage()
+                // should be paid
+                expect((await pair1Contract.positions(1)).paid).to.be.equal(true)
+
+                // should not be unpaid
+                expect((await pair2Contract.positions(1)).paid).to.be.equal(true)
+
+            });
 
 
-            // });
+
+            it("Payment status should change appropriately when Adding Liquidity", async function () {
+
+                const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2 } = await loadFixture(initialize);
+
+                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+
+                const address = await mDexV1NativeFactory.allPairs(0)
+
+                await mockMailbox2.processNextInboundMessage()
+
+                const address2 = await mDexV1NativeFactory2.allPairs(0)
+
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+
+                await mockMailbox.processNextInboundMessage()
+
+                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount1, amount2, 1000, mDexV1NativeFactory2.address, { value: gas})
+
+                await mockMailbox2.processNextInboundMessage()
+
+                const pair1Contract = await ethers.getContractAt("MDexV1PairNative", address);
+
+                const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
+
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+
+                await mockMailbox.processNextInboundMessage()
+
+                // should be paid
+                expect((await pair1Contract.positions(2)).paid).to.be.equal(true)
+
+                // should not be unpaid
+                expect((await pair2Contract.positions(2)).paid).to.be.equal(true)
+
+            });
 
             
         })
@@ -181,42 +300,5 @@ describe("MDexV1NativeFactory",  function () {
         })
 
     });
-
-
-    // describe("Handle Message function", function () {
-
-    //     describe("Validations", function () {
-
-    //         it("Should revert if not called by MockMailbox contract", async function () {
-
-    //             const { mDexV1NativeFactory, owner, mockSignature } = await loadFixture(initialize);
-
-    //             await expect(mDexV1NativeFactory.connect(owner).handle(
-    //                 originDomain, 
-    //                 "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266", 
-    //                 mockSignature.encodeCreatePairReceiver(originDomain, owner.address)
-    //             )).to.be.revertedWith("!mailbox")
-                
-    //         });
-            
-    //     })
-
-
-    //     describe("Events", function () {
-
-    //         it("Should emit an event on pair creation", async function () {
-
-    //             const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
-
-    //             const emit = await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
-                
-    //             expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
-    //                 .withArgs(1, 190, await mDexV1NativeFactory.allPairs(0), 1); 
-
-    //         });
-
-    //     })
-
-    // });
-
+   
 });

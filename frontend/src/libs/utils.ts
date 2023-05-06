@@ -1,4 +1,4 @@
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
 import { CHAIN_ID, DOMAIN_ID, FACTORY_ADDRESS } from "./enums"
@@ -35,6 +35,22 @@ export const networkNameByChainId = (chainId: number) => {
 
 }
 
+
+export const currencyByChainId = (chainId: number) => {
+
+    switch (chainId) {
+        case 5:
+            return "Goerli ETH"
+        case 97:
+            return "Test BNB"
+        case 80001:
+            return "Matic"
+        default:
+            return ""
+    }
+
+}
+
 export const getDate = () => {
 
     const date = new Date()
@@ -50,12 +66,12 @@ export const isEthAddress = (address: Address) => {
     return ethers.utils.isAddress(address)
 }
 
-export const convertToEther = (price: number) => {
+export const convertToEther = (price: number | BigNumber) => {
     if (!price) return 0
     return (ethers.utils.formatUnits(price.toString(), 'ether')).toString()
 }
 
-export const convertToWEI = (amount: number) => {
+export const convertToWEI = (amount: number | BigNumber) => {
     if (!amount) return 0
     return Number(amount) <= 0 ? 0 : ethers.utils.parseUnits(String(amount), 'ether')
 }
@@ -86,8 +102,6 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         domainId: DOMAIN_ID.NONE,
         factoryAddress: FACTORY_ADDRESS.NONE,
         symbol: "",
-        createGas: 10000000,
-        addGas: 100000
     },
     {
         name: "Mumbai",

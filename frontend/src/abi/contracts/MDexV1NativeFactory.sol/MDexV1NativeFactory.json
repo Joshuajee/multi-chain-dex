@@ -411,6 +411,11 @@
             "type": "uint256"
           },
           {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
+          },
+          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -462,6 +467,11 @@
             "type": "uint256"
           },
           {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
+          },
+          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -511,6 +521,11 @@
             "internalType": "uint256",
             "name": "amountIn2",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
           },
           {
             "internalType": "address",
@@ -669,6 +684,62 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gasAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "removeLiquidity",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      }
+    ],
+    "name": "removeLiquidityReceiver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
