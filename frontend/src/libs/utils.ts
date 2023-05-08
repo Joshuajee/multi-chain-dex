@@ -78,7 +78,6 @@ export const convertToWEI = (amount: number | BigNumber) => {
 
 export const  removeDecimal = (price: number, dicimal: number) => {
     if (!price) return 0
-
     return (ethers.utils.formatUnits(price.toString(), dicimal)).toString()
 }
 
@@ -135,3 +134,35 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
     }
 
 ]
+
+export const tokenSelected = (chainId1: number, chainId2: number): boolean => {
+    if (chainId1 === chainId2) return false
+    if (chainId1 === CHAIN_ID.NONE || chainId2 === CHAIN_ID.NONE) return false
+    return true
+}
+
+export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNumber): number => {
+
+    const amount = BigNumber.from(convertToWEI(amountIn))
+
+    const num = reserve1.mul(amount)
+
+    const dem = reserve2.add(amount)
+
+    console.log("YEES", amount.toString())
+
+    // console.log(num.toString())
+
+    // console.log(dem.toString())
+
+    // console.log((num.div(dem).toString()))
+
+    // console.log(Number(convertToEther(num.div(dem))))
+
+    return Number(convertToEther(num.div(dem)))
+}
+
+
+export const getPriceRatio = (reserve1: BigNumber, reserve2: BigNumber) : BigNumber  => {
+    return reserve1.div(reserve2)
+}

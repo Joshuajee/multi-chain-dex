@@ -1,3 +1,5 @@
+import { Address } from "wagmi";
+
 export enum ROUTES {
     SWAP = "/",
     TOKENS = "/tokens",
@@ -29,5 +31,5 @@ export enum FACTORY_ADDRESS {
 export enum GAS_FEES {
     CREATE = 10000000,
     ADD_LIQUIDITY = 150000,
-    SWAP_TOKEN = 200000,
+    SWAP_TOKEN = 100000,
 }  

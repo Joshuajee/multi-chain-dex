@@ -7,8 +7,8 @@ import SelectToken from "./SelectToken";
 
 
 interface IProps {
-    value: number | string;
-    setValue?: (value: string) => void;
+    value?: number;
+    setValue?: (value?: number) => void;
     chainIndex: number  | string;
     setChainIndex?: (value: number | string) => void;
     selectable: boolean;
@@ -27,7 +27,7 @@ const TokenSelector = (props: IProps) => {
     })
 
     const handleChangeEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
-        props?.setValue?.(e.target.value)
+        props?.setValue?.(Number(e.target.value))
     }
 
     const handleSelectEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {

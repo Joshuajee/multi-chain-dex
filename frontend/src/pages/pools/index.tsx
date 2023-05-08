@@ -7,7 +7,7 @@ import { Address, useAccount, useContractRead, useNetwork } from 'wagmi'
 import { convertToEther, convertToWEI, currencyByChainId, isAddressZero, supportedNetworks } from '@/libs/utils'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import { POSITION } from '@/libs/interfaces'
-import LoadingButton from '@/components/utils/LoadingButton'
+import Pool from '@/components/utils/Pool'
 
 
 
@@ -73,31 +73,7 @@ export default function Pools() {
 
                         {
                             data?.map((position: POSITION, index: number) => {
-                                return (
-                                    <div className='font-medium border-cyan-700 border-[1px] p-2 rounded-md' key={index}> 
-
-                                        <h3 className='font-bold'> ETH / MATIC </h3>
-
-                                        <div className='flex justify-between'>
-                                            <p>Investment 1: {convertToEther(position.amountIn1)} {currency}</p>
-                                            <p>Investment 2: {convertToEther(position.amountIn2)} </p>
-                                        </div>
-
-                                        <div className='flex justify-between'>
-                                            <p>Available Fees: {convertToEther(position.availableFees)} {currency} </p>
-                                            <p>Total Fees: {convertToEther(position.totalFees)} {currency} </p>
-                                        </div>
-
-                                        <div className='flex space-x-5 justify-between'>
-
-                                            <LoadingButton color='green'>Collect Fees</LoadingButton>
-
-                                            <LoadingButton color='yellow'>Switch To</LoadingButton>
-                                        
-                                        </div>
-
-                                    </div>
-                                )
+                                return (<Pool key={index} position={position} currency={currency} factory={factory as Address} />)
                             })
                         }
 

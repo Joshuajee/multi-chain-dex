@@ -1,4 +1,4 @@
-import { Address, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 import truncAddress from 'truncate-eth-address'
 import { AiOutlineWallet } from 'react-icons/ai'
 import  { RxCaretDown } from 'react-icons/rx'
