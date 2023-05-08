@@ -1,4 +1,4 @@
-import { ethers } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
 import { CHAIN_ID, DOMAIN_ID, FACTORY_ADDRESS } from "./enums"
@@ -35,6 +35,22 @@ export const networkNameByChainId = (chainId: number) => {
 
 }
 
+
+export const currencyByChainId = (chainId: number) => {
+
+    switch (chainId) {
+        case 5:
+            return "Goerli ETH"
+        case 97:
+            return "Test BNB"
+        case 80001:
+            return "Matic"
+        default:
+            return ""
+    }
+
+}
+
 export const getDate = () => {
 
     const date = new Date()
@@ -50,19 +66,18 @@ export const isEthAddress = (address: Address) => {
     return ethers.utils.isAddress(address)
 }
 
-export const convertToEther = (price: number) => {
+export const convertToEther = (price: number | BigNumber) => {
     if (!price) return 0
     return (ethers.utils.formatUnits(price.toString(), 'ether')).toString()
 }
 
-export const convertToWEI = (amount: number) => {
+export const convertToWEI = (amount: number | BigNumber) => {
     if (!amount) return 0
     return Number(amount) <= 0 ? 0 : ethers.utils.parseUnits(String(amount), 'ether')
 }
 
 export const  removeDecimal = (price: number, dicimal: number) => {
     if (!price) return 0
-
     return (ethers.utils.formatUnits(price.toString(), dicimal)).toString()
 }
 
@@ -86,8 +101,6 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         domainId: DOMAIN_ID.NONE,
         factoryAddress: FACTORY_ADDRESS.NONE,
         symbol: "",
-        createGas: 10000000,
-        addGas: 100000
     },
     {
         name: "Mumbai",
@@ -121,3 +134,35 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
     }
 
 ]
+
+export const tokenSelected = (chainId1: number, chainId2: number): boolean => {
+    if (chainId1 === chainId2) return false
+    if (chainId1 === CHAIN_ID.NONE || chainId2 === CHAIN_ID.NONE) return false
+    return true
+}
+
+export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNumber): number => {
+
+    const amount = BigNumber.from(convertToWEI(amountIn))
+
+    const num = reserve1.mul(amount)
+
+    const dem = reserve2.add(amount)
+
+    console.log("YEES", amount.toString())
+
+    // console.log(num.toString())
+
+    // console.log(dem.toString())
+
+    // console.log((num.div(dem).toString()))
+
+    // console.log(Number(convertToEther(num.div(dem))))
+
+    return Number(convertToEther(num.div(dem)))
+}
+
+
+export const getPriceRatio = (reserve1: BigNumber, reserve2: BigNumber) : BigNumber  => {
+    return reserve1.div(reserve2)
+}

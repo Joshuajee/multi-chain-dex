@@ -5,7 +5,6 @@ import Connection from "@/components/connection"
 
 const navs = [
     { name: "SWAP", link: ROUTES.SWAP},
-    { name: "TOKENS", link: ROUTES.TOKENS},
     { name: "POOLS", link: ROUTES.POOLS}
 ]
 
@@ -18,7 +17,7 @@ const Navbar = () => {
     return (
         <nav className={`${trigger && "shadow-lg backdrop-blur-xl bg-blue/50 z-10"} fixed w-full flex justify-between py-4 px-10`}>
 
-            <div className="text">Logo</div>
+            <div className="text text-white font-bold text-2xl">Multi DEX</div>
 
             <ul className="hidden md:flex items-center text-[#8892B0] text-xs">
 

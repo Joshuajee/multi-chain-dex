@@ -4,12 +4,15 @@ import Layout from '@/components/utils/Layout'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
-import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite } from 'wagmi'
+import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
-import { convertToEther, convertToWEI, isAddressZero, supportedNetworks } from '@/libs/utils'
+import MDexV1PairNativeABI from "@/abi/contracts/MDexV1PairNative.sol/MDexV1PairNative.json";
+import { convertToEther, convertToWEI, getPriceRatio, isAddressZero, supportedNetworks } from '@/libs/utils'
 import LoadingButton from '@/components/utils/LoadingButton'
 import { CHAIN_ID,  GAS_FEES } from '@/libs/enums'
 import { SUPPORTED_NETWORKS } from '@/libs/interfaces'
+import { BigNumber } from 'ethers'
+import Web3btn from '@/components/utils/Web3btn'
 
 const tokenSelected = (chainId1: number, chainId2: number): boolean | undefined => {
     if (chainId1 === chainId2) return false
@@ -24,8 +27,10 @@ export default function NewPosition() {
 
     const { address, isConnected } = useAccount()
 
-    const [amount1, setAmount1] = useState<number | string>(0)
-    const [amount2, setAmount2] = useState<number | string>(0)
+    const [isAvailable, setIsAvaliable] = useState(false);
+
+    const [amount1, setAmount1] = useState<number | undefined>()
+    const [amount2, setAmount2] = useState<number | undefined>()
 
     const [pairIndex1, setPairIndex1] = useState<number | string>(0)
     const [pairIndex2, setPairIndex2] = useState<number | string>(0)
@@ -55,6 +60,22 @@ export default function NewPosition() {
         chainId: pair2Details.chainId
     })
 
+    const pair2Reserve1 = useContractRead({
+        address: pair2.data as Address,
+        abi: MDexV1PairNativeABI,
+        functionName: 'reserve1',
+        chainId: pair2Details.chainId,
+        enabled: isAvailable
+      })
+    
+      const pair2Reserve2 = useContractRead({
+        address: pair2.data as Address,
+        abi: MDexV1PairNativeABI,
+        functionName: 'reserve2',
+        chainId: pair2Details.chainId,
+        enabled: isAvailable
+      })
+
     const gasQuotes = useContractRead({
         address: pair1Details.factoryAddress as Address,
         abi: MDexV1NativeFactoryABI,
@@ -64,7 +85,6 @@ export default function NewPosition() {
         enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
     })
 
-    //0.001473 
     const gasQuotes1 = useContractRead({
         address: pair1Details.factoryAddress as Address,
         abi: MDexV1NativeFactoryABI,
@@ -73,6 +93,7 @@ export default function NewPosition() {
         chainId: pair1Details.chainId,
         enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
     })
+
     const gasQuotes2 = useContractRead({
         address: pair2Details.factoryAddress as Address,
         abi: MDexV1NativeFactoryABI,
@@ -89,6 +110,11 @@ export default function NewPosition() {
         functionName: 'createPair',
         args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.CREATE, pair2Details.factoryAddress, { value: payment1 }],
         chainId: pair1Details.chainId,
+    })
+
+
+    const waitCreatePair = useWaitForTransaction({
+        hash: createPair.data as any,
     })
 
     const addLiquidity1 = useContractWrite({
@@ -109,8 +135,6 @@ export default function NewPosition() {
         chainId: pair2Details.chainId,
     })
 
-    console.log(pair1Details.domainId, " === ",pair2Details.factoryAddress,  pair1Details.chainId)
-
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex1(e.target.value)
     }
@@ -118,10 +142,6 @@ export default function NewPosition() {
     const handleSelectPairIndex2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex2(e.target.value)
     }
-
-    // useEffect(() => {
-    //     console.log(pair1);
-    // }, [pair1])
 
     useEffect(() => {
         setPair1Details(supportedNetworks[pairIndex1 as number])
@@ -143,20 +163,24 @@ export default function NewPosition() {
             setPayment1(value)
             setPayment2(value2)
         }
-        //setGas()
     }, [gasQuotes?.data, gasQuotes2?.data, amount1, amount2])
 
     useEffect(() => {
         setHasSelected(tokenSelected(pair1Details.chainId, pair2Details.chainId) as boolean)
     }, [pair1Details.chainId, pair2Details.chainId])
 
-    console.log(pair1.data)
-    console.log(pair2.data)
+    useEffect(() => {
+        if (!isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address)) {
+          setIsAvaliable(true)
+        }
+    }, [pair1?.data, pair2?.data])
 
-    console.log(addLiquidity2)
-
-
-
+    useEffect(() => {
+        if (pair1.data) {
+            //setAmount2(Number(convertToEther(getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).mul(amount1 as number))))
+        }
+    }, [amount1, pair1.data, pair2Reserve1.data, pair2Reserve2.data])
+    
 
     return (
         <Layout>
@@ -197,7 +221,7 @@ export default function NewPosition() {
                                                 </p>
                                         }
 
-                                        {   Number(amount1) > 0 && Number(amount2) > 0 &&
+                                        {   Number(amount1) > 0 && Number(amount2) > 0 && !pair2Reserve1.data &&
                                             <p className='mt-2 font-semibold'>
                                                 Price: 
                                                 <strong className='ml-2'> 
@@ -207,6 +231,19 @@ export default function NewPosition() {
                                             </p>
                                         }
 
+
+                                        {   pair2Reserve1.data ?
+                                            <p className='flex mt-2 font-semibold'>
+                                                Price: 
+                                                <strong className='flex ml-2'> 
+                                                    1 {pair1Details.symbol} =  
+                                                    <p className='ml-2'>
+                                                        {getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).toString()}
+                                                        {pair2Details.symbol} 
+                                                    </p>
+                                                </strong>
+                                            </p> : ""
+                                        }
 
 
                                     </div>
@@ -218,7 +255,7 @@ export default function NewPosition() {
                                     {
                                         isAddressZero(pair1?.data as Address) && isAddressZero(pair2?.data as Address) &&
                                             <LoadingButton 
-                                                loading={createPair.isLoading} 
+                                                loading={createPair.isLoading || waitCreatePair.isLoading} 
                                                 onClick={() => createPair?.write?.()}> Create Pair 
                                             </LoadingButton>
                                     }
@@ -233,10 +270,13 @@ export default function NewPosition() {
                                                         Gas Fee: 
                                                         <strong className='ml-2'> {Number(convertToEther(gasQuotes1?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
                                                     </p>
-                                                    <LoadingButton 
+
+                                                    <Web3btn
                                                         loading={addLiquidity1.isLoading} 
-                                                        onClick={() => addLiquidity1?.write?.()}> Add Liquidity {pair1Details.name}
-                                                    </LoadingButton>
+                                                        chain={pair1Details.name}
+                                                        chainId={pair1Details.chainId}
+                                                        onClick={() => addLiquidity1?.write?.()}>Add Liquidity  {pair1Details.name}
+                                                    </Web3btn>
                                                 </>
                                             }
                                         </div>
@@ -250,10 +290,13 @@ export default function NewPosition() {
                                                             Gas Fee: 
                                                             <strong className='ml-2'> {Number(convertToEther(gasQuotes2?.data as number)).toFixed(4)} {pair2Details.symbol} </strong>
                                                         </p>
-                                                        <LoadingButton 
+
+                                                        <Web3btn
                                                             loading={addLiquidity2.isLoading} 
-                                                            onClick={() => addLiquidity2?.write?.()}> Add Liquidity {pair2Details.name}
-                                                        </LoadingButton>
+                                                            chain={pair2Details.name}
+                                                            chainId={pair2Details.chainId}
+                                                            onClick={() => addLiquidity2?.write?.()}>Add Liquidity  {pair2Details.name}
+                                                        </Web3btn>
 
                                                     </>
                                             }
@@ -271,10 +314,15 @@ export default function NewPosition() {
                                     selectable={false} value={amount1} 
                                     chainIndex={pairIndex1} setValue={setAmount1} />
 
-                                <TokenSelector 
-                                    selectable={false} value={amount2} 
-                                    chainIndex={pairIndex2} setValue={setAmount2} />
-
+                                {   (pair1.data !== undefined) ?
+                                        <TokenSelector 
+                                            selectable={false} value={amount2} 
+                                            chainIndex={pairIndex2} setValue={setAmount2} />
+                                            :
+                                        <TokenSelector 
+                                            selectable={false} value={amount2} 
+                                            chainIndex={pairIndex2} setValue={setAmount2} />
+                                } 
                             </div>
 
                         </div>

@@ -1,11 +1,13 @@
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
-import { CHAIN_ID, ROUTES } from '@/libs/enums'
+import { ROUTES } from '@/libs/enums'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
-import { Address, useAccount, useContractRead } from 'wagmi'
-import { convertToEther, convertToWEI, isAddressZero, supportedNetworks } from '@/libs/utils'
+import { useEffect, useState } from 'react'
+import { Address, useAccount, useContractRead, useNetwork } from 'wagmi'
+import { convertToEther, convertToWEI, currencyByChainId, isAddressZero, supportedNetworks } from '@/libs/utils'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
+import { POSITION } from '@/libs/interfaces'
+import Pool from '@/components/utils/Pool'
 
 
 
@@ -15,16 +17,39 @@ export default function Pools() {
 
     const { address, isConnected } = useAccount()
 
+    const [data, setData] = useState<POSITION[]>([])
+
+    const [currency, setCurrency] = useState("")
+
+    const [factory, setFactory] = useState<Address | null>(null)
+
+    const { chain } = useNetwork()
+
     const getPositions = useContractRead({
-        address: supportedNetworks[1].factoryAddress as Address,
+        address: factory as Address,
         abi: MDexV1NativeFactoryABI,
         functionName: 'getUserOpenPositions',
-        enabled: isConnected,
+        enabled: isConnected && factory != null,
         args: [address],
     })
 
-    console.log(supportedNetworks[1].name)
-    console.log(getPositions)
+    useEffect(() => {
+        if (getPositions?.data) setData(getPositions?.data as POSITION[])
+    }, [getPositions?.data])
+
+    useEffect(() => {
+        setCurrency(currencyByChainId(chain?.id as number))
+    }, [getPositions?.data, chain?.id])
+
+    useEffect(() => {
+        setCurrency(currencyByChainId(chain?.id as number))
+        for (let i = 0; i < supportedNetworks.length; i++) {
+            if (supportedNetworks[i].domainId === chain?.id) {
+                setFactory(supportedNetworks[i].factoryAddress as Address)
+                break
+            }
+        }
+    }, [getPositions?.data, chain?.id])
 
     return (
         <Layout>
@@ -42,10 +67,15 @@ export default function Pools() {
                     </div>
 
                     <div 
-                        className={`
+                        className={`flex flex-col space-y-2
                         text-gray-700 bg-white rounded-md p-4 md:px-4 shadow-lg w-full max-w-[800px] min-h-[200px] max-h-[calc(100vh_-_100px)] overflow-x-hidden
                         `}>
 
+                        {
+                            data?.map((position: POSITION, index: number) => {
+                                return (<Pool key={index} position={position} currency={currency} factory={factory as Address} />)
+                            })
+                        }
 
                     </div>
 

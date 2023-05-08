@@ -10,7 +10,7 @@ import "./libs/Liquidity.sol";
 import "hardhat/console.sol";
 
 
-contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INonfungibleNativeLiquidity {
+contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
     //Events
     event Swap(address indexed to, uint amountIn, uint amountOut);
@@ -45,6 +45,10 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
 
     uint public reserve1;       
     uint public reserve2;  
+
+    uint public investment1;       
+    uint public investment2;  
+
     uint public kValue;          
     uint32 private blockTimestampLast; 
 
@@ -81,6 +85,10 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
         return keccak256(abi.encodePacked(_sender, positionCounter));
     }
 
+    function getPosition(uint _tokenId) external view returns (LiquidityToken memory) {
+        return positions[_tokenId];
+    }
+
     function getPositions() external view returns (uint) {
         return positionCounter;
     }
@@ -109,11 +117,11 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
         return msg.value - _amount;
     }
 
-    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender) external onlyFactory returns (uint) {
+    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender, bool isPaying) external onlyFactory returns (uint) {
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
-            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, sender);
+            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, isPaying, sender);
             
             myPendingPositions.add(sender, positionCounter);
             pendingPosition[sender] = positionCounter;
@@ -124,12 +132,17 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
 
             uint currentPosition = pendingPosition[sender];
 
+            if (isPaying) positions[currentPosition].paid = true;
+
             // Adding to liquidity and removing from pending
             openPositionArray.push(currentPosition);
             myOpenedPositions.add(sender, currentPosition);
             myPendingPositions.remove(sender, currentPosition);
             reserve1 += positions[currentPosition].amountIn1;
             reserve2 += positions[currentPosition].amountIn2;
+
+            investment1 += positions[currentPosition].amountIn1;
+            investment2 += positions[currentPosition].amountIn2;
 
             //pricing             
             kValue = (reserve1) * (reserve2);
@@ -198,11 +211,40 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative, INon
         return output;
     }
 
+    function removeLiquidityCore(uint _position, address _owner) external onlyFactory returns(bytes32) {
+        
+        LiquidityToken memory position = positions[_position];
 
-    function removeLiquidityCore(uint amountIn, address from) external onlyFactory returns (uint amountOut) {
+        //Liquidity.Map private myPendingPositions;
 
+        // Removing it from opened positons and adding to closed
+        // console.log(_position);
+        // openPositionArray[_position] = openPositionArray[openPositionArray.length - 1];
+        // openPositionArray.pop();
+
+  
+        // using iterable mapping to store positions
+        //myOpenedPositions.get(_position);
+        //Liquidity.Map private myClosedPositions;
+
+        delete positions[_position];
+
+        uint percent =  investment1 / position.amountIn1;
+
+        investment1 -= position.amountIn1;
+
+        uint payout = reserve1 / percent;
+
+        reserve1 -= reserve1;
+
+        (bool success, ) = payable(_owner).call{value: payout}("");
+
+        if (!success) revert("MDEX: TRANSACTION FAILED");
+
+        return position.id;
 
     }
+
 
     function swapCore(uint _amountIn, address _to) external onlyFactory returns (uint amountOut) {
 

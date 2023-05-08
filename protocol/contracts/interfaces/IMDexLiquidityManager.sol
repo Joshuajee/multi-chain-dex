@@ -9,6 +9,7 @@ interface INonfungibleNativeLiquidity {
         uint totalFees;
         uint amountIn1;
         uint amountIn2;
+        bool paid;
         address owner;
     }
 
