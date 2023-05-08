@@ -21,6 +21,6 @@ export interface POSITION {
     amountIn1: BigNumber,
     amountIn2: BigNumber,
     availableFees: BigNumber,
-    totalFees: BigNumber,
+    totalFees: BigNumber
     paid: Boolean,
 }
