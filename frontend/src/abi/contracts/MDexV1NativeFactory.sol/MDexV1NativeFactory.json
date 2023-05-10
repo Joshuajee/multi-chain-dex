@@ -156,6 +156,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "MINIMUM_LIQUIDITY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint32",
@@ -300,13 +313,7 @@
       }
     ],
     "name": "createPair",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "pair",
-        "type": "address"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -381,62 +388,6 @@
         "type": "address"
       }
     ],
-    "name": "getUserClosedPositions",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "id",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "availableFees",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalFees",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountIn1",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountIn2",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "paid",
-            "type": "bool"
-          },
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
     "name": "getUserOpenPositions",
     "outputs": [
       {
@@ -475,6 +426,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -531,6 +487,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -715,34 +676,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_id",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_remoteDomain",
-        "type": "uint32"
-      },
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_remoteAddress",
-        "type": "address"
-      }
-    ],
-    "name": "removeLiquidityReceiver",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -830,6 +763,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "_amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_amountOut",
         "type": "uint256"
       },
@@ -860,45 +798,6 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "userClosedPositions",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "remoteDomain",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "positionId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "remoteAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "pair",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

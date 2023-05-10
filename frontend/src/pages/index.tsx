@@ -9,7 +9,7 @@ import { convertToEther, convertToWEI, getPrice, isAddressZero, supportedNetwork
 import { GAS_FEES } from '@/libs/enums'
 import { SUPPORTED_NETWORKS } from '@/libs/interfaces'
 import { BigNumber } from 'ethers'
-import SwapBtn from '@/components/utils/SwapBtn'
+import SwapBtn from '@/components/utils/buttons/SwapBtn'
 
 
 export default function Home() {
@@ -142,8 +142,10 @@ export default function Home() {
             <SwapBtn 
               chainId={pair1Details.chainId}
               domainId={pair2Details.domainId}
+              destinationChainId={pair2Details.chainId}
               contract={pair1Details.factoryAddress as Address}
               destinationContract={pair2Details.factoryAddress as Address}
+              originDomainId={pair1Details.domainId}
               payment={payment}
               amountIn={valueFrom}
               chainName={pair1Details.name}

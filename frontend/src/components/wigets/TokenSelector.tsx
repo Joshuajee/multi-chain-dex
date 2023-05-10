@@ -12,6 +12,7 @@ interface IProps {
     chainIndex: number  | string;
     setChainIndex?: (value: number | string) => void;
     selectable: boolean;
+    disableInput?: boolean;
 }
 
 const TokenSelector = (props: IProps) => {
@@ -35,10 +36,10 @@ const TokenSelector = (props: IProps) => {
     }
 
     return (
-        <div className="flex justify-between items-center bg-gray-200 rounded-2xl px-2 h-16 md:h-24 mt-2">
+        <div className="flex justify-between items-center bg-gray-200 rounded-2xl px-2 h-20 md:h-24 mt-2">
             
             <div>
-                <input placeholder="0" type={"number"} className="swap-input text-3xl outline-none bg-gray-200 w-full" value={props.value} onChange={handleChangeEvent} />
+                <input disabled={props.disableInput}  placeholder="0" type={"number"} className="swap-input text-3xl outline-none bg-gray-200 w-full" value={props.value} onChange={handleChangeEvent} />
             </div>
 
             <div className="flex flex-col  items-end">

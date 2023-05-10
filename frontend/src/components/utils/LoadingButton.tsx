@@ -5,18 +5,19 @@ interface IProps {
     disabled?: boolean; 
     loading?: boolean;
     onClick?: () => void; 
+    loadingText?: string;
     children: ReactNode 
 }
 
 const LoadingButton = (props: IProps) => {
 
-    const { color, disabled, loading, children, onClick } = props
+    const { color, disabled, loading, loadingText, children, onClick } = props
 
     if (loading) return (
         <button 
             disabled={true}
             className="my-2 rounded-lg w-full bg-gray-400 disabled:hover:bg-gray-400 disabled:text-gray-200 py-2"> 
-            Please Wait...
+            { loadingText ? loadingText : "Please Wait... " }
         </button>
     )
 

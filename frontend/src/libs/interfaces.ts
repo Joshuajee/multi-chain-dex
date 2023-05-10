@@ -23,4 +23,6 @@ export interface POSITION {
     availableFees: BigNumber,
     totalFees: BigNumber
     paid: Boolean,
+    tokenId: BigNumber,
+    remoteDomain: number
 }

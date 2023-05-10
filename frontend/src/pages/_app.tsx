@@ -1,6 +1,6 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import { WagmiConfig, createClient, configureChains, goerli } from 'wagmi'
+import { WagmiConfig, createClient, configureChains, goerli, sepolia } from 'wagmi'
 import { bscTestnet, polygonMumbai } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
@@ -12,12 +12,12 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [polygonMumbai, goerli, bscTestnet],
+  [polygonMumbai, sepolia, bscTestnet],
   [
     alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}),
-    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}),
-    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}), 
-    publicProvider()],
+    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_SEPOLIA_KEY)}), 
+    publicProvider()
+  ],
 )
 
  

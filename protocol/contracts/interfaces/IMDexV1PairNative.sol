@@ -9,7 +9,7 @@ interface IMDexV1PairNative is INonfungibleNativeLiquidity {
     function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender, bool isPaying) external returns(uint); 
     function removeLiquidityCore(uint _position, address _owner) external returns(bytes32); 
     function swapCore(uint _amountIn, address _to) external returns (uint amountOut);
-    function swapPay(uint _amountOut, address _to) external;
+    function swapPay(uint _amountIn, uint _amountOut, address _to) external;
     function generateId(address _sender) external view returns (bytes32);
     function getPosition(uint _tokenId) external view returns (LiquidityToken memory);
 }

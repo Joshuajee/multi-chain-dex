@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
-import LoadingButton from "./LoadingButton"
+import LoadingButton from "../LoadingButton"
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
-import ModalWrapper from "./ModalWrapper";
-import WalletOptions from "../connection/walletsOptions";
+import ModalWrapper from "../ModalWrapper";
+import WalletOptions from "../../connection/walletsOptions";
 
 interface IProps { 
     color?: string; 
@@ -12,6 +12,7 @@ interface IProps {
     children: ReactNode ,
     chain: string,
     chainId?: number,
+    loadingText?: string;
 }
 
 const Web3btn = (props: IProps) => {
@@ -25,9 +26,10 @@ const Web3btn = (props: IProps) => {
     const closeOptions  = () => {
         setShowOptions(false)
     }
+    
 
     const click = () => {
-        
+
         if (!isConnected) return setShowOptions(true)
 
         if (switchChain)  return switchNetwork?.(props.chainId)
@@ -47,7 +49,7 @@ const Web3btn = (props: IProps) => {
 
     return (
         <div>
-            <LoadingButton color={props.color} loading={props.loading} disabled={props.disabled} onClick={click}>
+            <LoadingButton loadingText={props.loadingText} color={props.color} loading={props.loading} disabled={props.disabled} onClick={click}>
                 {
                     !isConnected ? "Connect Wallet" : switchChain ? `Switch to ${props.chain}` :  props.children 
                 }
