@@ -113,14 +113,14 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         symbol: "MATIC",
     },
     {
-        name: "Goerli",
+        name: "Sepolia",
         description: "",
         icon: "",
-        chainId: CHAIN_ID.GOERLI,
-        domainId: DOMAIN_ID.GOERLI,
+        chainId: CHAIN_ID.SEPOLIA,
+        domainId: DOMAIN_ID.SEPOLIA,
         mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
-        factoryAddress: FACTORY_ADDRESS.GOERLI,
-        symbol: "GOERLI ETH",
+        factoryAddress: FACTORY_ADDRESS.SEPOLIA,
+        symbol: "SEPOLIA ETH",
     },
     {
         name: "BNB Testnet",
@@ -149,20 +149,16 @@ export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNum
 
     const dem = reserve2.add(amount)
 
-    console.log("YEES", amount.toString())
-
-    // console.log(num.toString())
-
-    // console.log(dem.toString())
-
-    // console.log((num.div(dem).toString()))
-
-    // console.log(Number(convertToEther(num.div(dem))))
-
     return Number(convertToEther(num.div(dem)))
 }
 
-
 export const getPriceRatio = (reserve1: BigNumber, reserve2: BigNumber) : BigNumber  => {
-    return reserve1.div(reserve2)
+    
+    console.log("1 ", reserve1.toString())
+    console.log("2 ", reserve2.toString())
+    
+    console.log(" == ",(reserve2.div(reserve1)).toString())
+    
+    if (reserve1.gt(reserve2)) return reserve1.div(reserve2)
+    return  BigNumber.from(1).div(reserve2.div(reserve1))
 }

@@ -28,7 +28,7 @@ export default function Pool(props: IProps) {
         address: pair.data as Address,
         abi: MDexV1PairNativeABI,
         functionName: 'collectFee',
-        args: [2],
+        args: [position.tokenId],
         chainId: 80001,
     })
 

@@ -1,5 +1,3 @@
-import { Address } from "wagmi";
-
 export enum ROUTES {
     SWAP = "/",
     TOKENS = "/tokens",
@@ -9,27 +7,27 @@ export enum ROUTES {
 
 export enum CHAIN_ID {
     NONE = 0,
-    GOERLI = 5,
+    SEPOLIA = 11155111,
     BNB_TEST = 97,
     MUMBAI = 80001
 }  
 
 export enum DOMAIN_ID {
     NONE = 0,
-    GOERLI = 5,
+    SEPOLIA = 11155111,
     BNB_TEST = 97,
     MUMBAI = 80001
 }  
 
 export enum FACTORY_ADDRESS {
     NONE = 0,
-    GOERLI = "",
-    BNB_TEST = "0xF80Af2b1d9b1dd7c342aD9d1bd4E79531c181269",
-    MUMBAI = "0xBE4EC2736eC3D2f93365267da4e0b01C2c956323"
+    SEPOLIA = "0xF5613C6F28C3e03839f72CD62C36E4321f307D75",
+    BNB_TEST = "0xF5613C6F28C3e03839f72CD62C36E4321f307D75",
+    MUMBAI = "0x64f20d811c383ed8bB055582aa7e2C3F87847E16"
 }  
 
 export enum GAS_FEES {
-    CREATE = 10000000,
-    ADD_LIQUIDITY = 150000,
-    SWAP_TOKEN = 100000,
+    CREATE = 11000000,
+    ADD_LIQUIDITY = 300000,
+    SWAP_TOKEN = 200000,
 }  

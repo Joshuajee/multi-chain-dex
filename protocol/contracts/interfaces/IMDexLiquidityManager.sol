@@ -11,6 +11,7 @@ interface INonfungibleNativeLiquidity {
         uint amountIn2;
         bool paid;
         address owner;
+        uint tokenId;
     }
 
   

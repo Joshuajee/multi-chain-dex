@@ -15,11 +15,11 @@ const Navbar = () => {
     const trigger = scrollPosition > 80
 
     return (
-        <nav className={`${trigger && "shadow-lg backdrop-blur-xl bg-blue/50 z-10"} fixed w-full flex justify-between py-4 px-10`}>
+        <nav className={`${trigger && "shadow-lg backdrop-blur-xl bg-blue/50 z-10"} fixed w-full flex justify-between py-4 px-2 md:px-10`}>
 
-            <div className="text text-white font-bold text-2xl">Multi DEX</div>
+            <div className="text text-white font-bold text-md md:text-2xl">MDEX</div>
 
-            <ul className="hidden md:flex items-center text-[#8892B0] text-xs">
+            <ul className="flex items-center text-[#8892B0] text-xs">
 
                 {
                     navs.map((nav, index) => {
@@ -34,11 +34,9 @@ const Navbar = () => {
 
                 }
 
-                <li>
-                    <Connection />
-                </li>
-
             </ul>
+
+            <Connection />
 
         </nav>
     )

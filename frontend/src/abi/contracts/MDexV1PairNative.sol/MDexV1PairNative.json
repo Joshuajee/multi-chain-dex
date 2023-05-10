@@ -197,19 +197,6 @@
   },
   {
     "inputs": [],
-    "name": "MINIMUM_LIQUIDITY",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "PERCENT",
     "outputs": [
       {
@@ -364,6 +351,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -420,6 +412,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -476,6 +473,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -532,6 +534,11 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken",
@@ -801,6 +808,11 @@
         "internalType": "address",
         "name": "owner",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -941,6 +953,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amountIn",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_amountOut",

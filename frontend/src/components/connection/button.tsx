@@ -37,9 +37,9 @@ const ConnectionBtn = () => {
             {
 
                 isConnected &&  (
-                    <div onClick={() => setShow(!show)} className='hover:cursor-pointer hover:bg-slate-200 w-44 flex items-center cursor-pointer'>
+                    <div onClick={() => setShow(!show)} className='hover:cursor-pointer hover:bg-slate-200 w-28 md:w-44 flex items-center cursor-pointer'>
 
-                        <AiOutlineWallet className='mr-2' size={"2em"} />
+                        <AiOutlineWallet className='mr-2' size={16} />
 
                         <span> {truncAddress(String(address))}  </span>    
 

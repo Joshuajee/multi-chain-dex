@@ -1,20 +1,20 @@
 import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
-import { Address, useAccount, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
+import { Address, useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import MDexV1PairNativeABI from "@/abi/contracts/MDexV1PairNative.sol/MDexV1PairNative.json";
 import { convertToEther, convertToWEI, getPriceRatio, isAddressZero, supportedNetworks } from '@/libs/utils'
 import LoadingButton from '@/components/utils/LoadingButton'
 import { CHAIN_ID,  GAS_FEES } from '@/libs/enums'
-import { SUPPORTED_NETWORKS } from '@/libs/interfaces'
+import { POSITION, SUPPORTED_NETWORKS } from '@/libs/interfaces'
 import { BigNumber } from 'ethers'
-import Web3btn from '@/components/utils/Web3btn'
+import AddLiquidity from '@/components/utils/buttons/AddLiquidity'
+import CreatePair from '@/components/utils/buttons/CreatePair'
 
-const tokenSelected = (chainId1: number, chainId2: number): boolean | undefined => {
+const tokenSelected = (chainId1: number, chainId2: number): boolean => {
     if (chainId1 === chainId2) return false
     if (chainId1 === CHAIN_ID.NONE || chainId2 === CHAIN_ID.NONE) return false
     return true
@@ -23,11 +23,11 @@ const tokenSelected = (chainId1: number, chainId2: number): boolean | undefined 
 
 export default function NewPosition() {
 
-    const router = useRouter()
-
-    const { address, isConnected } = useAccount()
+    const { address } = useAccount()
 
     const [isAvailable, setIsAvaliable] = useState(false);
+
+    const [price, setPrice] = useState<number>(1)
 
     const [amount1, setAmount1] = useState<number | undefined>()
     const [amount2, setAmount2] = useState<number | undefined>()
@@ -40,8 +40,8 @@ export default function NewPosition() {
 
     const [hasSelected, setHasSelected] = useState(false)
 
-    const [payment1, setPayment1] = useState<any>()
-    const [payment2, setPayment2] = useState<any>()
+    const [disable1, setDisable1] = useState(false)
+    const [disable2, setDisable2] = useState(false)
 
     const pair1 = useContractRead({
         address: pair1Details.factoryAddress as Address,
@@ -49,7 +49,7 @@ export default function NewPosition() {
         functionName: 'getPair',
         args: [pair1Details.chainId, pair2Details.chainId],
         chainId: pair1Details.chainId,
-        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
+        enabled: hasSelected
     })
 
     const pair2 = useContractRead({
@@ -57,7 +57,8 @@ export default function NewPosition() {
         abi: MDexV1NativeFactoryABI,
         functionName: 'getPair',
         args: [pair2Details.domainId, pair1Details.domainId],
-        chainId: pair2Details.chainId
+        chainId: pair2Details.chainId,
+        enabled: hasSelected
     })
 
     const pair2Reserve1 = useContractRead({
@@ -66,73 +67,25 @@ export default function NewPosition() {
         functionName: 'reserve1',
         chainId: pair2Details.chainId,
         enabled: isAvailable
-      })
+    })
     
-      const pair2Reserve2 = useContractRead({
+    const pair2Reserve2 = useContractRead({
         address: pair2.data as Address,
         abi: MDexV1PairNativeABI,
         functionName: 'reserve2',
         chainId: pair2Details.chainId,
         enabled: isAvailable
-      })
-
-    const gasQuotes = useContractRead({
-        address: pair1Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'quoteGasPayment',
-        args: [pair2Details.domainId, GAS_FEES.CREATE],
-        chainId: pair1Details.chainId,
-        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
     })
 
-    const gasQuotes1 = useContractRead({
-        address: pair1Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'quoteGasPayment',
-        args: [pair2Details.domainId, GAS_FEES.ADD_LIQUIDITY],
-        chainId: pair1Details.chainId,
-        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
-    })
 
-    const gasQuotes2 = useContractRead({
-        address: pair2Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'quoteGasPayment',
-        args: [pair1Details.domainId, GAS_FEES.ADD_LIQUIDITY],
+    const pair2pending = useContractRead({
+        address: pair2.data as Address,
+        abi: MDexV1PairNativeABI,
+        functionName: 'getPendingPositionsByAddress',
         chainId: pair2Details.chainId,
-        enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
-    })
-
-    const createPair = useContractWrite({
-        mode: 'recklesslyUnprepared',
-        address: pair1Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'createPair',
-        args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.CREATE, pair2Details.factoryAddress, { value: payment1 }],
-        chainId: pair1Details.chainId,
-    })
-
-
-    const waitCreatePair = useWaitForTransaction({
-        hash: createPair.data as any,
-    })
-
-    const addLiquidity1 = useContractWrite({
-        mode: 'recklesslyUnprepared',
-        address: pair1Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'addLiquidity',
-        args: [pair2Details.domainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.ADD_LIQUIDITY, pair2Details.factoryAddress, { value: payment1 }],
-        chainId: pair1Details.chainId,
-    })
-
-    const addLiquidity2 = useContractWrite({
-        mode: 'recklesslyUnprepared',
-        address: pair2Details.factoryAddress as Address,
-        abi: MDexV1NativeFactoryABI,
-        functionName: 'addLiquidity',
-        args: [pair1Details.domainId, convertToWEI(amount2 as number), convertToWEI(amount1 as number), GAS_FEES.ADD_LIQUIDITY, pair1Details.factoryAddress, { value: payment2 }],
-        chainId: pair2Details.chainId,
+        args: [address],
+        enabled: isAvailable,
+        watch: true
     })
 
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -152,20 +105,6 @@ export default function NewPosition() {
     }, [pairIndex2])
 
     useEffect(() => {
-        const gaspay = gasQuotes?.data //+ convertToWEI(amount1 as number) 
-
-        const gaspay2 = gasQuotes2?.data 
-
-        if (gaspay) {
-            const value = BigInt(gaspay as any) + BigInt(convertToWEI(amount1 as number) as any)
-            const value2 = BigInt(gaspay2 as any) + BigInt(convertToWEI(amount2 as number) as any)
-            console.log(value)
-            setPayment1(value)
-            setPayment2(value2)
-        }
-    }, [gasQuotes?.data, gasQuotes2?.data, amount1, amount2])
-
-    useEffect(() => {
         setHasSelected(tokenSelected(pair1Details.chainId, pair2Details.chainId) as boolean)
     }, [pair1Details.chainId, pair2Details.chainId])
 
@@ -177,10 +116,49 @@ export default function NewPosition() {
 
     useEffect(() => {
         if (pair1.data) {
-            //setAmount2(Number(convertToEther(getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).mul(amount1 as number))))
+            //const priceRatio = getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber)
+            //console.log(" ===== ", priceRatio.toString())
+            //console.log((Number(convertToEther(priceRatio.mul(amount1 as number)))))
+            //setAmount2(Number(convertToEther(priceRatio.mul(amount1 as number))))
         }
     }, [amount1, pair1.data, pair2Reserve1.data, pair2Reserve2.data])
-    
+
+    useEffect(() => {
+        if (amount1) {
+            setAmount2(price * amount1)
+        }
+    }, [amount1, pair1.data, price])
+
+    console.log((pair2pending?.data))
+
+    useEffect(() => {
+        if ((pair2pending?.data as POSITION[])?.length > 0) {
+           
+            const data = (pair2pending?.data as POSITION[])?.[0]
+
+            const amountIn1 = Number(convertToEther(data?.amountIn1))
+
+            const amountIn2 = Number(convertToEther(data?.amountIn2))
+
+            setAmount1(amountIn2)
+
+            //setAmount2(amountIn1)
+
+            setPrice(amountIn1 * amountIn2 * 100)
+
+            if (data.paid) {
+                setDisable1(false)
+                setDisable2(true)
+            } else {
+                setDisable1(true)
+                setDisable2(false)
+            }
+        } else {
+            setDisable1(false)
+            setDisable2(false)
+        }
+
+    }, [pair2pending?.data])
 
     return (
         <Layout>
@@ -208,25 +186,17 @@ export default function NewPosition() {
                                     <SelectToken chainIndex={pairIndex2} handleSelectEvent={handleSelectPairIndex2}/>
                                 </div>
                                 
-                                {   tokenSelected(pair1Details.chainId, pair2Details.chainId) &&
+                                {   hasSelected &&
                                     <div className='flex flex-col w-full py-3 px-1'>
                                         
                                         <p>You will earn 1% in fees</p>
 
-                                        {
-                                            isAddressZero(pair1?.data as Address) && isAddressZero(pair2?.data as Address) &&
-                                                <p className='mt-2 font-semibold'>
-                                                    Gas Fee: 
-                                                    <strong className='ml-2'> {Number(convertToEther(gasQuotes?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
-                                                </p>
-                                        }
-
-                                        {   Number(amount1) > 0 && Number(amount2) > 0 && !pair2Reserve1.data &&
-                                            <p className='mt-2 font-semibold'>
+                                        {   !isAvailable &&
+                                            <p className='text-center mt-2 font-semibold'>
                                                 Price: 
                                                 <strong className='ml-2'> 
                                                     1 {pair1Details.symbol} =  
-                                                    { (Number(amount2) / Number(amount1))} {pair2Details.symbol} 
+                                                    <b className='ml-2'></b>{price.toFixed(4)} {pair2Details.symbol} 
                                                 </strong>
                                             </p>
                                         }
@@ -238,8 +208,8 @@ export default function NewPosition() {
                                                 <strong className='flex ml-2'> 
                                                     1 {pair1Details.symbol} =  
                                                     <p className='ml-2'>
-                                                        {getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).toString()}
-                                                        {pair2Details.symbol} 
+                                                        {/* {getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).toString()}
+                                                        {pair2Details.symbol}  */}
                                                     </p>
                                                 </strong>
                                             </p> : ""
@@ -253,31 +223,46 @@ export default function NewPosition() {
 
                                 <div>
                                     {
-                                        isAddressZero(pair1?.data as Address) && isAddressZero(pair2?.data as Address) &&
-                                            <LoadingButton 
-                                                loading={createPair.isLoading || waitCreatePair.isLoading} 
-                                                onClick={() => createPair?.write?.()}> Create Pair 
-                                            </LoadingButton>
+                                        (hasSelected && !isAvailable) && 
+                                            <CreatePair 
+                                                contract={pair1Details.factoryAddress as Address}
+                                                originChainName={pair1Details.name}
+                                                originChainId={pair1Details.chainId}
+                                                originDomainId={pair1Details.domainId}
+                                                remoteContract={pair2Details.factoryAddress as Address}
+                                                remoteChainId={pair2Details.chainId}
+                                                remoteChainName={pair2Details.name}
+                                                remoteDomainId={pair2Details.domainId}
+                                                amount1={amount1}
+                                                amount2={amount2}
+                                                symbol={pair1Details.symbol}
+                                                remoteSymbol={pair2Details.symbol}
+                                                isSelected={hasSelected}
+                                                setPrice={setPrice}
+                                                />
                                     }
                                 </div>
+
                                 { hasSelected &&
                                     <>
                                         <div>
                                             {
                                                 !isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address) &&
-                                                <>    
-                                                    <p className='mt-2 font-semibold'>
-                                                        Gas Fee: 
-                                                        <strong className='ml-2'> {Number(convertToEther(gasQuotes1?.data as number)).toFixed(4)} {pair1Details.symbol} </strong>
-                                                    </p>
-
-                                                    <Web3btn
-                                                        loading={addLiquidity1.isLoading} 
-                                                        chain={pair1Details.name}
-                                                        chainId={pair1Details.chainId}
-                                                        onClick={() => addLiquidity1?.write?.()}>Add Liquidity  {pair1Details.name}
-                                                    </Web3btn>
-                                                </>
+                                                    <AddLiquidity 
+                                                        contract={pair1Details.factoryAddress as Address}
+                                                        originChainName={pair1Details.name}
+                                                        originChainId={pair1Details.chainId}
+                                                        originDomainId={pair1Details.domainId}
+                                                        remoteContract={pair2Details.factoryAddress as Address}
+                                                        remoteChainId={pair2Details.chainId}
+                                                        remoteChainName={pair2Details.name}
+                                                        remoteDomainId={pair2Details.domainId}
+                                                        amount1={amount1}
+                                                        amount2={amount2}
+                                                        symbol={pair1Details.symbol}
+                                                        isSelected={hasSelected}
+                                                        disabled={disable1}
+                                                        />
                                             }
                                         </div>
 
@@ -286,17 +271,21 @@ export default function NewPosition() {
                                                 !isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address) &&
                                                     <>
 
-                                                        <p className='mt-2 font-semibold'>
-                                                            Gas Fee: 
-                                                            <strong className='ml-2'> {Number(convertToEther(gasQuotes2?.data as number)).toFixed(4)} {pair2Details.symbol} </strong>
-                                                        </p>
-
-                                                        <Web3btn
-                                                            loading={addLiquidity2.isLoading} 
-                                                            chain={pair2Details.name}
-                                                            chainId={pair2Details.chainId}
-                                                            onClick={() => addLiquidity2?.write?.()}>Add Liquidity  {pair2Details.name}
-                                                        </Web3btn>
+                                                        <AddLiquidity 
+                                                            contract={pair2Details.factoryAddress as Address}
+                                                            originChainName={pair2Details.name}
+                                                            originChainId={pair2Details.chainId}
+                                                            originDomainId={pair2Details.domainId}
+                                                            remoteContract={pair1Details.factoryAddress as Address}
+                                                            remoteChainId={pair1Details.chainId}
+                                                            remoteChainName={pair1Details.name}
+                                                            remoteDomainId={pair1Details.domainId}
+                                                            amount1={amount2}
+                                                            amount2={amount1}
+                                                            symbol={pair2Details.symbol}
+                                                            isSelected={hasSelected}
+                                                            disabled={disable2}
+                                                            />
 
                                                     </>
                                             }
@@ -311,18 +300,15 @@ export default function NewPosition() {
                                 <h3 className='font-semibold mt-2'> Enter Amount </h3>
                                 
                                 <TokenSelector 
+                                    disableInput={disable1 || disable2}
                                     selectable={false} value={amount1} 
                                     chainIndex={pairIndex1} setValue={setAmount1} />
 
-                                {   (pair1.data !== undefined) ?
-                                        <TokenSelector 
-                                            selectable={false} value={amount2} 
-                                            chainIndex={pairIndex2} setValue={setAmount2} />
-                                            :
-                                        <TokenSelector 
-                                            selectable={false} value={amount2} 
-                                            chainIndex={pairIndex2} setValue={setAmount2} />
-                                } 
+                                <TokenSelector 
+                                    disableInput={disable1 || disable2}
+                                    selectable={false} value={amount2} 
+                                    chainIndex={pairIndex2} setValue={setAmount2} />
+   
                             </div>
 
                         </div>

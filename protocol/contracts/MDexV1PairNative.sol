@@ -32,8 +32,6 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
     Liquidity.Map private myOpenedPositions;
     Liquidity.Map private myClosedPositions;
 
-    uint public constant MINIMUM_LIQUIDITY = 10**3;
-
     address public factory;
     address public remoteAddress;
 
@@ -121,7 +119,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
-            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, isPaying, sender);
+            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, isPaying, sender, positionCounter);
             
             myPendingPositions.add(sender, positionCounter);
             pendingPosition[sender] = positionCounter;
@@ -245,7 +243,6 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
     }
 
-
     function swapCore(uint _amountIn, address _to) external onlyFactory returns (uint amountOut) {
 
         (uint _reserve1, uint _reserve2,) = getReserves(); // gas savings
@@ -254,17 +251,24 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
    
         if (_amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
 
-        payerInvestor(_amountIn);
+        uint fee = payerInvestor(_amountIn);
+
+        reserve1 += _amountIn - fee;
+
+        reserve2 -= amountOut;
 
         emit Swap(_to, _amountIn, amountOut);
     }
 
-    function swapPay(uint _amountOut, address _to) external onlyFactory {
+    function swapPay(uint _amountIn, uint _amountOut, address _to) external onlyFactory {
         (bool success, ) = payable(_to).call{value: _amountOut}("MDEX: SWAP_SUCCESSFUL");
+        uint fee = (_amountIn * FEE) / PERCENT; 
+        reserve1 -= _amountOut;
+        reserve2 += _amountIn - fee;
         if (!success) revert("MDEX: SWAP_FAILED");
     }
 
-    function payerInvestor(uint _amountIn) internal {
+    function payerInvestor(uint _amountIn) internal returns (uint) {
 
         uint fee = (_amountIn * FEE) / PERCENT; 
 
@@ -282,6 +286,8 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
                 ++i;
             }
         }
+
+        return fee;
 
     }
 
