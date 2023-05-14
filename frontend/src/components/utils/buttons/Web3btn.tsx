@@ -58,6 +58,7 @@ const Web3btn = (props: IProps) => {
             <ModalWrapper title={"Choose Wallet"} open={showOptions} handleClose={closeOptions}>
                 <WalletOptions close={closeOptions}/>
             </ModalWrapper>
+            
         </div>
     )
 

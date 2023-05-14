@@ -14,8 +14,6 @@ import SwapBtn from '@/components/utils/buttons/SwapBtn'
 
 export default function Home() {
 
-  const { address, isConnected } = useAccount()
-
   const [valueFrom, setValueFrom] = useState<number | undefined>()
   const [valueTo, setValueTo] = useState<number | undefined>()
 
@@ -64,15 +62,6 @@ export default function Home() {
     enabled: isAvailable
   })
 
-  const pendingPosition = useContractRead({
-    address: pair1.data as Address,
-    abi: MDexV1PairNativeABI,
-    functionName: 'myPendingPositions',
-    args: [address],
-    chainId: pair1Details.chainId,
-    enabled: isAvailable && isConnected
-  })
-
   const gasQuotes = useContractRead({
     address: pair1Details.factoryAddress as Address,
     abi: MDexV1NativeFactoryABI,
@@ -114,7 +103,6 @@ export default function Home() {
       setPayment(value)
     }
   }, [gasQuotes?.data, valueFrom])
-
 
   return (
     <Layout>

@@ -1,21 +1,19 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { WagmiConfig, createClient, configureChains, goerli, sepolia } from 'wagmi'
-import { bscTestnet, polygonMumbai } from 'wagmi/chains'
+import { avalancheFuji, bscTestnet, polygonMumbai } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
 import { InjectedConnector } from 'wagmi/connectors/injected'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-import { useEffect } from 'react'
+import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [polygonMumbai, sepolia, bscTestnet],
+  [polygonMumbai, avalancheFuji, bscTestnet],
   [
-    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_MUMBAI_KEY)}),
-    alchemyProvider({ apiKey: String(process.env.NEXT_PUBLIC_ALCHEMY_SEPOLIA_KEY)}), 
     publicProvider()
   ],
 )
@@ -50,6 +48,8 @@ const client = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
+
+  console.log(String(process.env.NEXT_PUBLIC_ALCHEMY_SEPOLIA_RPC))
 
   return (
     <WagmiConfig client={client}>

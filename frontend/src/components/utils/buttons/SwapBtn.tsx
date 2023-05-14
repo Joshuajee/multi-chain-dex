@@ -115,7 +115,6 @@ export default function SwapBtn(props: IProps) {
             toast.error(swap.error?.message)
             setLoading(false)
         }
-
     }, [swap.isError, swap.error])
 
     if (loading)

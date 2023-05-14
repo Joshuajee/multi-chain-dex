@@ -115,11 +115,11 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         return msg.value - _amount;
     }
 
-    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, address sender, bool isPaying) external onlyFactory returns (uint) {
+    function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, uint32 remoteDomain, address sender, bool isPaying) external onlyFactory returns (uint) {
 
         if (pendingPosition[sender] == 0) {
             positionCounter++;
-            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, isPaying, sender, positionCounter);
+            positions[positionCounter] = LiquidityToken(id, 0, 0, amountIn1, amountIn2, isPaying, sender, positionCounter, remoteDomain);
             
             myPendingPositions.add(sender, positionCounter);
             pendingPosition[sender] = positionCounter;

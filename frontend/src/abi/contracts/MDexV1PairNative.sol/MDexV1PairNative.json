@@ -239,6 +239,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
+      },
+      {
         "internalType": "address",
         "name": "sender",
         "type": "address"
@@ -356,6 +361,11 @@
             "internalType": "uint256",
             "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -417,6 +427,11 @@
             "internalType": "uint256",
             "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -478,6 +493,11 @@
             "internalType": "uint256",
             "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
@@ -539,6 +559,11 @@
             "internalType": "uint256",
             "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
           }
         ],
         "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken",
@@ -813,6 +838,11 @@
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",

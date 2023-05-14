@@ -1,7 +1,7 @@
 import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
 import { Address, useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
@@ -77,7 +77,6 @@ export default function NewPosition() {
         enabled: isAvailable
     })
 
-
     const pair2pending = useContractRead({
         address: pair2.data as Address,
         abi: MDexV1PairNativeABI,
@@ -87,6 +86,24 @@ export default function NewPosition() {
         enabled: isAvailable,
         watch: true
     })
+
+    const getPositions = useContractRead({
+        address: pair2.data as Address,
+        abi: MDexV1PairNativeABI,
+        functionName: 'getPositions',
+        chainId: pair2Details.chainId,
+        args: [address],
+        enabled: isAvailable,
+        watch: true
+    })
+
+    const updatePrice = useCallback(() => {
+        const amountIn1 = Number(convertToEther(pair2Reserve1?.data as BigNumber)) 
+        const amountIn2 = Number(convertToEther(pair2Reserve2?.data as BigNumber)) 
+        if (amountIn1 > 0 && amountIn2 > 0) {
+            setPrice(amountIn1 * amountIn2 * 100)
+        }
+    }, [pair2Reserve1?.data, pair2Reserve2?.data])
 
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex1(e.target.value)
@@ -110,18 +127,15 @@ export default function NewPosition() {
 
     useEffect(() => {
         if (!isAddressZero(pair1?.data as Address) && !isAddressZero(pair2?.data as Address)) {
-          setIsAvaliable(true)
+            setIsAvaliable(true)
+        } else {
+            setIsAvaliable(false)
         }
     }, [pair1?.data, pair2?.data])
 
     useEffect(() => {
-        if (pair1.data) {
-            //const priceRatio = getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber)
-            //console.log(" ===== ", priceRatio.toString())
-            //console.log((Number(convertToEther(priceRatio.mul(amount1 as number)))))
-            //setAmount2(Number(convertToEther(priceRatio.mul(amount1 as number))))
-        }
-    }, [amount1, pair1.data, pair2Reserve1.data, pair2Reserve2.data])
+        updatePrice()
+    }, [updatePrice])
 
     useEffect(() => {
         if (amount1) {
@@ -129,22 +143,20 @@ export default function NewPosition() {
         }
     }, [amount1, pair1.data, price])
 
-    console.log((pair2pending?.data))
 
     useEffect(() => {
         if ((pair2pending?.data as POSITION[])?.length > 0) {
            
             const data = (pair2pending?.data as POSITION[])?.[0]
 
-            const amountIn1 = Number(convertToEther(data?.amountIn1))
-
-            const amountIn2 = Number(convertToEther(data?.amountIn2))
-
-            setAmount1(amountIn2)
-
-            //setAmount2(amountIn1)
-
-            setPrice(amountIn1 * amountIn2 * 100)
+            if ((getPositions.data as number) > 1) {
+                updatePrice()
+            } else {
+                const amountIn1 = Number(convertToEther(data?.amountIn1))
+                const amountIn2 = Number(convertToEther(data?.amountIn2))
+                setAmount1(amountIn2)
+                setPrice(amountIn1 * amountIn2 * 100)
+            }
 
             if (data.paid) {
                 setDisable1(false)
@@ -158,7 +170,14 @@ export default function NewPosition() {
             setDisable2(false)
         }
 
-    }, [pair2pending?.data])
+    }, [pair2pending?.data, getPositions.data, updatePrice])
+
+    console.log("-------------------")
+    console.log(pair2Reserve1?.data?.toString())
+    console.log(pair2Reserve2?.data?.toString())
+
+    console.log(hasSelected, isAvailable)
+    console.log(!isAddressZero(pair1?.data as Address), !isAddressZero(pair2?.data as Address))
 
     return (
         <Layout>
@@ -191,30 +210,13 @@ export default function NewPosition() {
                                         
                                         <p>You will earn 1% in fees</p>
 
-                                        {   !isAvailable &&
-                                            <p className='text-center mt-2 font-semibold'>
-                                                Price: 
-                                                <strong className='ml-2'> 
-                                                    1 {pair1Details.symbol} =  
-                                                    <b className='ml-2'></b>{price.toFixed(4)} {pair2Details.symbol} 
-                                                </strong>
-                                            </p>
-                                        }
-
-
-                                        {   pair2Reserve1.data ?
-                                            <p className='flex mt-2 font-semibold'>
-                                                Price: 
-                                                <strong className='flex ml-2'> 
-                                                    1 {pair1Details.symbol} =  
-                                                    <p className='ml-2'>
-                                                        {/* {getPriceRatio(pair2Reserve1.data as BigNumber, pair2Reserve2.data as BigNumber).toString()}
-                                                        {pair2Details.symbol}  */}
-                                                    </p>
-                                                </strong>
-                                            </p> : ""
-                                        }
-
+                                        <p className='text-center mt-2 font-semibold'>
+                                            Price: 
+                                            <strong className='ml-[1px]'> 
+                                                1 {pair1Details.symbol} =  
+                                                <b className='ml-[2px]'></b>{price.toFixed(4)} {pair2Details.symbol} 
+                                            </strong>
+                                        </p>
 
                                     </div>
                                 }

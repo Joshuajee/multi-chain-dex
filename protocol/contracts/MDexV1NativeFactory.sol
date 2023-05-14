@@ -33,29 +33,24 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
     mapping(address => Position[]) public userPendingPositions;
     //mapping(address => Position[]) public userClosedPositions;
 
+    struct AddLiquidityStruct {
+        uint32 remoteDomain; 
+        uint amountIn1; 
+        uint amountIn2; 
+        uint gasAmount; 
+        address remoteAddress;
+    }
+
 
 
     //Modifiers
-     modifier isPaymentValid(uint _gasAmount, uint _amountIn1, uint _amount2, uint32 _remoteDomain) {
-        {    
-            uint quote = quoteGasPayment(_remoteDomain, _gasAmount);
-            if (_amountIn1 + quote > msg.value) revert("MDEX: INSUFFIENT GAS");
-        }
+    modifier isPayingEnoughGas(uint _gasAmount, uint _amountIn1, uint32 _remoteDomain) {    
+        if (_amountIn1 + quoteGasPayment(_remoteDomain, _gasAmount) > msg.value) revert("MDEX: INSUFFIENT GAS");
         _;
     }
 
-    modifier isPayingEnoughGas(uint _gasAmount, uint _amountIn1, uint32 _remoteDomain) {
-        {    
-            uint quote = quoteGasPayment(_remoteDomain, _gasAmount);
-            if (_amountIn1 + quote > msg.value) revert("MDEX: INSUFFIENT GAS");
-        }
-        _;
-    }
-
-    modifier isAboveMinAmount(uint _amountIn1, uint _amountIn2) {
-        {
-            if (_amountIn1 < MINIMUM_LIQUIDITY && _amountIn2 < MINIMUM_LIQUIDITY) revert("MDEX: LIQUIDITY TOO SMALL");
-        }
+    modifier isAboveMinAmount(AddLiquidityStruct memory input) {
+        if (input.amountIn1 < MINIMUM_LIQUIDITY && input.amountIn2 < MINIMUM_LIQUIDITY) revert("MDEX: LIQUIDITY TOO SMALL");
         _;
     }
 
@@ -203,47 +198,45 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
     //     return liquidityToken;
     // }
 
-    function createPair(
-        uint32 _remoteDomain, 
-        uint _amountIn1, 
-        uint _amountIn2, 
-        uint _gasAmount, 
-        address _remoteAddress) external payable 
-            isPayingEnoughGas(_gasAmount, _amountIn1, _remoteDomain) 
-            //isPaymentValid(_gasAmount, _amountIn1, _amountIn2, _remoteDomain) 
-            {
+    //isPayingEnoughGas(_gasAmount, _amountIn1, _remoteDomain) 
+
+    function createPair(AddLiquidityStruct calldata input) external payable 
+        isPayingEnoughGas(input.gasAmount, input.amountIn1, input.remoteDomain) 
+        isAboveMinAmount(input)
+        {
 
         {
-            if (LOCAL_DOMAIN == _remoteDomain) revert('MDEX: IDENTICAL_CHAIN');
+            if (LOCAL_DOMAIN == input.remoteDomain) revert('MDEX: IDENTICAL_CHAIN');
 
-            (uint32 chainA, uint32 chainB) = LOCAL_DOMAIN <  _remoteDomain ? (LOCAL_DOMAIN,  _remoteDomain) : ( _remoteDomain, LOCAL_DOMAIN);
+            (uint32 chainA, uint32 chainB) = LOCAL_DOMAIN <  input.remoteDomain ? (LOCAL_DOMAIN,  input.remoteDomain) : ( input.remoteDomain, LOCAL_DOMAIN);
 
             if (getPair[chainA][chainB] != address(0)) revert('MDEX: ALREADY EXISTS');
 
         }
 
         {
-            address pair = contractFactory(_remoteDomain, _remoteAddress);
+
+            address pair = contractFactory(input.remoteDomain, input.remoteAddress);
 
             bytes32 _id = IMDexV1PairNative(pair).generateId(msg.sender);
 
             bytes32 messageId = IMailbox(mailbox).dispatch(
-                _remoteDomain,
-                _remoteAddress.addressToBytes32(),
-                abi.encodeWithSignature("createPairReceiver(uint32,uint256,uint256,address,address)", LOCAL_DOMAIN, _amountIn1, _amountIn2, msg.sender, address(this))
+                input.remoteDomain,
+                input.remoteAddress.addressToBytes32(),
+                abi.encodeWithSignature("createPairReceiver(uint32,uint256,uint256,address,address)", LOCAL_DOMAIN, input.amountIn1, input.amountIn2, msg.sender, address(this))
             );
  
-            (bool success, ) = payable(pair).call{ value: _amountIn1}("");
+            (bool success, ) = payable(pair).call{ value: input.amountIn1}("");
 
             if (!success) revert("MDEX: Transaction Failed");
 
-            uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, msg.sender, true);
+            uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, input.amountIn1, input.amountIn2, input.remoteDomain, msg.sender, true);
             
-            payForGas(messageId, _remoteDomain, _gasAmount,  msg.value - _amountIn1);
+            payForGas(messageId, input.remoteDomain, input.gasAmount,  msg.value - input.amountIn1);
             
-            addPosition(_remoteDomain, position,  msg.sender,_remoteAddress, pair);
+            addPosition(input.remoteDomain, position,  msg.sender, input.remoteAddress, pair);
 
-            emit PairCreated(_remoteDomain, _remoteAddress, pair, allPairs.length);
+            emit PairCreated(input.remoteDomain, input.remoteAddress, pair, allPairs.length);
 
         }
     
@@ -270,7 +263,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
         payForGas(messageId, _remoteDomain, _gasAmount, _getGas(_amountIn1));
 
-        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, msg.sender, true);   
+        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, _remoteDomain, msg.sender, true);   
     
         addPosition(_remoteDomain, position, msg.sender, _remoteAddress, pair);
     }
@@ -319,11 +312,12 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
     // =========== Receivers =============
 
     function createPairReceiver(uint32 _remoteDomain,  uint256 _amountIn1, uint256 _amountIn2,  address _owner, address _remoteAddress) external onlyMailbox returns (address pair) {
+        
         pair = contractFactory(_remoteDomain,  _remoteAddress);
         
         bytes32 _id = IMDexV1PairNative(pair).generateId(_owner);
 
-        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _owner, false); 
+        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _remoteDomain, _owner, false); 
         
         addPosition(_remoteDomain, position, _owner, _remoteAddress, pair); 
 
@@ -333,7 +327,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
     function addLiquidityReceiver(bytes32 _id, uint32 _remoteDomain, uint256 _amountIn1, uint256 _amountIn2, address _sender, address _remoteAddress) external onlyMailbox {
         address pair = getPair[LOCAL_DOMAIN][_remoteDomain];
         
-        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _sender, false);   
+        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _remoteDomain, _sender, false);   
 
         addPosition(_remoteDomain, position, _sender, _remoteAddress, pair); 
     }
