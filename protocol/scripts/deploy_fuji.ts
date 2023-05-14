@@ -5,7 +5,7 @@ async function main() {
 
   const DOMAIN = 5
   const MAILBOX = "0xCC737a94FecaeC165AbCf12dED095BB13F037685"
-  const interchainGasPaymaster = "0xF987d7edcb5890cB321437d8145E3D51131298b6"
+  const interchainGasPaymaster = "0xF90cB82a76492614D07B82a7658917f3aC811Ac1"
 
   const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
 

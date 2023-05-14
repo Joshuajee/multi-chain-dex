@@ -34,8 +34,8 @@ const config = {
 			url: 'https://mainnet.infura.io/v3/',
 			accounts: [ PRIVATE_KEY ]
 		},
-		goerli: {
-			url: 'https://goerli.infura.io/v3/',
+		fuji: {
+			url: 'https://api.avax-test.network/ext/C/rpc',
 			accounts: [ PRIVATE_KEY ]
 		},
 		polygon: {

@@ -12,6 +12,7 @@ interface INonfungibleNativeLiquidity {
         bool paid;
         address owner;
         uint tokenId;
+        uint32 remoteDomain;
     }
 
   

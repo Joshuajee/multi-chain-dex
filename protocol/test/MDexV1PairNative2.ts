@@ -10,8 +10,8 @@ describe("Liquidity Pool Test", function () {
     const originDomain = 1000
     const remoteDomain = 2000
 
-    const amount1 = ethers.utils.parseUnits("100", "ether");
-    const amount2 = ethers.utils.parseUnits("20", "ether");
+    const amountIn1 = ethers.utils.parseUnits("100", "ether");
+    const amountIn2 = ethers.utils.parseUnits("20", "ether");
 
     const gas = ethers.utils.parseUnits("101", "ether");
     const gasAmount = ethers.utils.parseUnits("0.01", "ether");
@@ -57,7 +57,7 @@ describe("Liquidity Pool Test", function () {
 
         await mDexV1NativeFactory2.initialize(mockMailbox2.address, interchainGasPaymaster2.address)
 
-        await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+        await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
         await mockMailbox2.processNextInboundMessage()
 
@@ -69,31 +69,31 @@ describe("Liquidity Pool Test", function () {
 
         const pair2Contract = await ethers.getContractAt("MDexV1PairNative", pair2);
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
         await mockMailbox.processNextInboundMessage()
 
@@ -126,7 +126,7 @@ describe("Liquidity Pool Test", function () {
 
             const { mockMailbox2, one, mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
-            await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amount1, amount2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+            await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
 
             await mockMailbox2.processNextInboundMessage()
 

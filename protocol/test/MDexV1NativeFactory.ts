@@ -8,8 +8,8 @@ describe("MDexV1NativeFactory",  function () {
     const originDomain = 1000
     const remoteDomain = 2000
 
-    const amount1 = ethers.utils.parseUnits("100", "ether");
-    const amount2 = ethers.utils.parseUnits("20", "ether");
+    const amountIn1 = ethers.utils.parseUnits("100", "ether");
+    const amountIn2 = ethers.utils.parseUnits("20", "ether");
     const gas = ethers.utils.parseUnits("101", "ether");
 
     async function deploy() {
@@ -108,14 +108,14 @@ describe("MDexV1NativeFactory",  function () {
             it("Should revert if Factory has not been initialize", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
-                await expect(mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })).to.be.revertedWithoutReason()
+                await expect(mDexV1NativeFactory.createPair({remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address}, { value: gas })).to.be.revertedWithoutReason()
                 
             });
 
             it("Should revert with the right error if the chains are the same", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
 
-                await expect(mDexV1NativeFactory.createPair(originDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })).to.be.revertedWith(
+                await expect(mDexV1NativeFactory.createPair({ remoteDomain: originDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })).to.be.revertedWith(
                     "MDEX: IDENTICAL_CHAIN"
                 );
                 
@@ -124,7 +124,7 @@ describe("MDexV1NativeFactory",  function () {
             it("Should create pair with right details and balance", async function () {
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                await mDexV1NativeFactory.createPair({remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -136,7 +136,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 expect(await mDexV1NativeFactory.getPair(originDomain, remoteDomain)).to.be.equal(address)
 
-                expect(balance).to.be.equal(amount1)
+                expect(balance).to.be.equal(amountIn1)
                 
             });
 
@@ -144,7 +144,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -160,7 +160,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
 
-                expect(balance).to.be.equal(amount1)
+                expect(balance).to.be.equal(amountIn1)
 
                 expect(await pair1Contract.reserve1()).to.be.equal(0)
 
@@ -178,7 +178,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                await mDexV1NativeFactory.createPair({remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -194,7 +194,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
 
-                expect(balance).to.be.equal(amount1)
+                expect(balance).to.be.equal(amountIn1)
 
                 expect(await pair1Contract.reserve1()).to.be.equal(0)
 
@@ -213,7 +213,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -231,7 +231,7 @@ describe("MDexV1NativeFactory",  function () {
                 // should not be unpaid
                 expect((await pair2Contract.positions(1)).paid).to.be.equal(false)
 
-                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, 1000, mDexV1NativeFactory.address, { value: gas})
 
                 await mockMailbox.processNextInboundMessage()
                 // should be paid
@@ -248,7 +248,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const { mDexV1NativeFactory, mDexV1NativeFactory2, mockMailbox, mockMailbox2 } = await loadFixture(initialize);
 
-                await mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
                 const address = await mDexV1NativeFactory.allPairs(0)
 
@@ -256,11 +256,11 @@ describe("MDexV1NativeFactory",  function () {
 
                 const address2 = await mDexV1NativeFactory2.allPairs(0)
 
-                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, 1000, mDexV1NativeFactory.address, { value: gas})
 
                 await mockMailbox.processNextInboundMessage()
 
-                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount1, amount2, 1000, mDexV1NativeFactory2.address, { value: gas})
+                await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, 1000, mDexV1NativeFactory2.address, { value: gas})
 
                 await mockMailbox2.processNextInboundMessage()
 
@@ -268,7 +268,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const pair2Contract = await ethers.getContractAt("MDexV1PairNative", address2);
 
-                await mDexV1NativeFactory2.addLiquidity(originDomain, amount2, amount1, 1000, mDexV1NativeFactory.address, { value: gas})
+                await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, 1000, mDexV1NativeFactory.address, { value: gas})
 
                 await mockMailbox.processNextInboundMessage()
 
@@ -290,7 +290,7 @@ describe("MDexV1NativeFactory",  function () {
 
                 const { mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(initialize);
 
-                const emit = await  mDexV1NativeFactory.createPair(remoteDomain, amount1, amount2, 10, mDexV1NativeFactory2.address, { value: gas })
+                const emit = await  mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
                 
                 expect(emit).to.emit(mDexV1NativeFactory, "PairCreated")
                     .withArgs(originDomain, remoteDomain, await mDexV1NativeFactory.allPairs(0), 1); 

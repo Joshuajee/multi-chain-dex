@@ -93,15 +93,18 @@ export default function AddLiquidity(props: IProps) {
     }, [addLiquidity.isLoading, isLoading])
 
     useEffect(() => {
-
         const gaspay = gasQuotes?.data
-
         if (gaspay) {
             setPayment((gaspay as BigNumber).add(convertToWEI(amount1 as number)))
         }
-
     }, [gasQuotes?.data, amount1, amount2])
 
+    useEffect(() => {
+        if (addLiquidity.isError) {
+            toast.error(addLiquidity.error?.message)
+            setLoading(false)
+        }
+    }, [addLiquidity.isError, addLiquidity.error])
 
     return (
         <div>

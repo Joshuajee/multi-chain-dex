@@ -39,9 +39,6 @@ export default function CreatePair(props: IProps) {
 
     const [value, setValue] = useState<string | number>(1)
 
-    
-
-    console.log(contract)
 
     const [payment, setPayment] = useState<BigNumber>()
 
@@ -54,14 +51,19 @@ export default function CreatePair(props: IProps) {
         enabled: isSelected
     })
 
-    console.log(contract, originChainId)
-
     const createPair = useContractWrite({
         mode: 'recklesslyUnprepared',
         address: contract,
         abi: MDexV1NativeFactoryABI,
         functionName: 'createPair',
-        args: [remoteDomainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.ADD_LIQUIDITY, remoteContract, { value: payment }],
+        args: [
+            {
+               remoteDomain: remoteDomainId, 
+               amountIn1: convertToWEI(amount1 as number), 
+               amountIn2: convertToWEI(amount2 as number), 
+               gasAmount: GAS_FEES.ADD_LIQUIDITY, 
+               remoteAddress: remoteContract
+            }, { value: payment }],
         chainId: originChainId,
     })
 
@@ -107,6 +109,12 @@ export default function CreatePair(props: IProps) {
         }
     }, [gasQuotes?.data, amount1, amount2])
 
+    useEffect(() => {
+        if (createPair.isError) {
+            toast.error(createPair.error?.message)
+            setLoading(false)
+        }
+    }, [createPair.isError, createPair.error])
 
     useEffect(() => {
         setPrice(Number(value))
