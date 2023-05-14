@@ -3,8 +3,6 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 
-
-
 describe("Liquidity Pool Test", function () {
 
     const originDomain = 1000
@@ -33,15 +31,15 @@ describe("Liquidity Pool Test", function () {
         await mockMailbox.addRemoteMailbox(remoteDomain, mockMailbox2.address);
         await mockMailbox2.addRemoteMailbox(originDomain, mockMailbox.address);
 
-        const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
+        const MDexV1PairClone = await ethers.getContractFactory("MDexV1PairNative");
 
-        const mDexV1CloneFactory  = await MDexV1CloneFactory.deploy();
-        const mDexV1CloneFactory2  = await MDexV1CloneFactory.deploy();
+        const mDexV1PairClone  = await MDexV1PairClone.deploy();
+        const mDexV1PairClone2  = await MDexV1PairClone.deploy();
 
 
         const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
-        const mDexV1NativeFactory = await MDexV1NativeFactory.deploy(originDomain, mDexV1CloneFactory.address);
-        const mDexV1NativeFactory2 = await MDexV1NativeFactory.deploy(remoteDomain, mDexV1CloneFactory2.address);
+        const mDexV1NativeFactory = await MDexV1NativeFactory.deploy(originDomain, mDexV1PairClone.address);
+        const mDexV1NativeFactory2 = await MDexV1NativeFactory.deploy(remoteDomain, mDexV1PairClone2.address);
 
         //InterchainGasMaster
         const MIGP = await ethers.getContractFactory("MockInterchainGasPaymaster");

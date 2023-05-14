@@ -66,7 +66,14 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         _;
     }
 
-    constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) {
+    // constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) {
+    //     remoteAddress = _remoteAddress;
+    //     factory = _factory;
+    //     LOCAL_DOMAIN = _LOCAL_DOMAIN;
+    //     REMOTE_DOMAIN = _REMOTE_DOMAIN;
+    // }
+
+    function init(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) external initializer()  {
         remoteAddress = _remoteAddress;
         factory = _factory;
         LOCAL_DOMAIN = _LOCAL_DOMAIN;
@@ -91,7 +98,8 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         return positionCounter;
     }
 
-    function collectFee(uint _positionId) public lock {
+    function collectFee(uint _positionId) public // lock 
+    {
         LiquidityToken storage myPosition = positions[_positionId];
         if (myPosition.owner != msg.sender) revert("MDEX: NOT OWNER");
         uint fee = myPosition.availableFees;
@@ -100,11 +108,16 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         if (!success) revert("MDEX: TRANSACTION FAIL");
     }
 
-    function initialize(address _mailbox, address _interchainGasPaymaster) external initializer() {
+    function initialize(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory, address _mailbox, address _interchainGasPaymaster) external initializer() {
         __HyperlaneConnectionClient_initialize(
             _mailbox, 
             _interchainGasPaymaster
         );
+
+        remoteAddress = _remoteAddress;
+        factory = _factory;
+        LOCAL_DOMAIN = _LOCAL_DOMAIN;
+        REMOTE_DOMAIN = _REMOTE_DOMAIN;
     }
 
     function getPrice(uint _amountIn) public view returns(uint) {

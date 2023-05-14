@@ -30,7 +30,7 @@ export default function AddLiquidity(props: IProps) {
     const { 
         contract, amount1, amount2, remoteDomainId, originDomainId, 
         remoteChainId, originChainId, remoteContract, originChainName, 
-        remoteChainName, symbol, isSelected, disabled 
+        symbol, isSelected, disabled 
     } = props
 
     const [loading, setLoading] = useState(false)
@@ -68,7 +68,6 @@ export default function AddLiquidity(props: IProps) {
         abi: MDexV1NativeFactoryABI,
         eventName: 'ReceivedMessage',
         listener(domain, sender, msg) {
-            console.log(domain, sender, msg)
             if (domain === originDomainId && contract === sender) {
                 setLoading(false)
                 toast.success("Liquidity added successfully")
@@ -77,7 +76,6 @@ export default function AddLiquidity(props: IProps) {
         },
         chainId: remoteChainId 
     })
-
 
     useEffect(() => {
         if (addLiquidity.isLoading) {

@@ -1,31 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "uint32",
-        "name": "_LOCAL_DOMAIN",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_REMOTE_DOMAIN",
-        "type": "uint32"
-      },
-      {
-        "internalType": "address",
-        "name": "_remoteAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_factory",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -631,6 +605,54 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "_LOCAL_DOMAIN",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_REMOTE_DOMAIN",
+        "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_factory",
+        "type": "address"
+      }
+    ],
+    "name": "init",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "_LOCAL_DOMAIN",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_REMOTE_DOMAIN",
+        "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "_remoteAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_factory",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "_mailbox",

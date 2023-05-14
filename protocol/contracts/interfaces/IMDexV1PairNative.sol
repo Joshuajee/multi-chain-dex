@@ -5,7 +5,7 @@ import "./IMDexLiquidityManager.sol";
 
 interface IMDexV1PairNative is INonfungibleNativeLiquidity {
     event ReceivedMessage(uint32 indexed _origin, address indexed _sender, bytes _body);
-    function initialize(address _mailbox, address _interchainGasPaymaster) external;
+    function initialize(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory, address _mailbox, address _interchainGasPaymaster) external;
     function addLiquidityCore(bytes32 id, uint amountIn1, uint amountIn2, uint32 originDomain, address sender, bool isPaying) external returns(uint); 
     function removeLiquidityCore(uint _position, address _owner) external returns(bytes32); 
     function swapCore(uint _amountIn, address _to) external returns (uint amountOut);

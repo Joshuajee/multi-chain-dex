@@ -39,12 +39,43 @@ export const networkNameByChainId = (chainId: number) => {
 export const currencyByChainId = (chainId: number) => {
 
     switch (chainId) {
-        case 5:
-            return "Goerli ETH"
-        case 97:
+        case CHAIN_ID.AVALANCHE_FUJI:
+            return "Fuji"
+        case CHAIN_ID.ACELO:
             return "Test BNB"
-        case 80001:
+        case CHAIN_ID.MUMBAI:
             return "Matic"
+        default:
+            return ""
+    }
+
+}
+
+
+export const currencyByDomainId = (domainId: DOMAIN_ID) => {
+
+    switch (domainId) {
+        case DOMAIN_ID.AVALANCHE_FUJI:
+            return "Fuji"
+        case DOMAIN_ID.ACELO:
+            return "Test BNB"
+        case DOMAIN_ID.MUMBAI:
+            return "Matic"
+        default:
+            return ""
+    }
+
+}
+
+export const networkNameByDomainId = (domainId: DOMAIN_ID) => {
+
+    switch (domainId) {
+        case DOMAIN_ID.AVALANCHE_FUJI:
+            return "Avalanche Fuji"
+        case DOMAIN_ID.ACELO:
+            return "Alfajore"
+        case DOMAIN_ID.MUMBAI:
+            return "Mumbai"
         default:
             return ""
     }
@@ -123,6 +154,16 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         symbol: "FUJI",
     },
     {
+        name: "Alfajores",
+        description: "",
+        icon: "",
+        chainId: CHAIN_ID.ACELO,
+        domainId: DOMAIN_ID.ACELO,
+        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
+        factoryAddress: FACTORY_ADDRESS.ACELO,
+        symbol: "FUJI",
+    },
+    {
         name: "BNB Testnet",
         description: "",
         icon: "",
@@ -162,3 +203,4 @@ export const getPriceRatio = (reserve1: BigNumber, reserve2: BigNumber) : BigNum
     if (reserve1.gt(reserve2)) return reserve1.div(reserve2)
     return  BigNumber.from(1).div(reserve2.div(reserve1))
 }
+
