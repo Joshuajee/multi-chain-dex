@@ -98,16 +98,27 @@ export default function NewPosition() {
     })
 
     const updatePrice = useCallback(() => {
-        const amountIn1 = Number(convertToEther(pair2Reserve1?.data as BigNumber)) 
-        const amountIn2 = Number(convertToEther(pair2Reserve2?.data as BigNumber)) 
-        if (amountIn1 > 0 && amountIn2 > 0) {
-            setPrice(amountIn1 * amountIn2 * 100)
+
+        if (pair2Reserve1?.data && pair2Reserve1?.data) {
+            
+            const amountIn1 = pair2Reserve1.data as BigNumber
+            const amountIn2 = pair2Reserve2.data as BigNumber
+
+            if (amountIn1.gt(amountIn2)) {
+                setPrice(Number(amountIn1.div(amountIn2).toString()))
+            } else {
+                setPrice(1 / Number(amountIn2.div(amountIn1).toString()))
+            }
+    
         }
+
+
     }, [pair2Reserve1?.data, pair2Reserve2?.data])
 
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex1(e.target.value)
     }
+
 
     const handleSelectPairIndex2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex2(e.target.value)
@@ -139,7 +150,7 @@ export default function NewPosition() {
 
     useEffect(() => {
         if (amount1) {
-            setAmount2(price * amount1)
+            setAmount2(price * Number(amount1))
         }
     }, [amount1, pair1.data, price])
 
@@ -154,8 +165,11 @@ export default function NewPosition() {
             } else {
                 const amountIn1 = Number(convertToEther(data?.amountIn1))
                 const amountIn2 = Number(convertToEther(data?.amountIn2))
+
                 setAmount1(amountIn2)
-                setPrice(amountIn1 * amountIn2 * 100)
+                setAmount2(amountIn1)
+                setPrice(amountIn1 / amountIn2)
+                
             }
 
             if (data.paid) {
@@ -171,13 +185,6 @@ export default function NewPosition() {
         }
 
     }, [pair2pending?.data, getPositions.data, updatePrice])
-
-    console.log("-------------------")
-    console.log(pair2Reserve1?.data?.toString())
-    console.log(pair2Reserve2?.data?.toString())
-
-    console.log(hasSelected, isAvailable)
-    console.log(!isAddressZero(pair1?.data as Address), !isAddressZero(pair2?.data as Address))
 
     return (
         <Layout>

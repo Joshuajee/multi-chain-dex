@@ -144,7 +144,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         symbol: "MATIC",
     },
     {
-        name: "AVALANCHE FUJI",
+        name: "Avalanche Fuji",
         description: "",
         icon: "",
         chainId: CHAIN_ID.AVALANCHE_FUJI,
