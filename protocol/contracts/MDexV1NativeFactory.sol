@@ -4,13 +4,13 @@ pragma solidity  0.8.19;
 import "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol";
 import "@hyperlane-xyz/core/contracts/libs/TypeCasts.sol";
 import './interfaces/IMDexV1PairNative.sol';
-import './interfaces/IMDexV1CloneFactory.sol';
 import './interfaces/IMDexV1NativeFactory.sol';
 import './MDexV1PairNative.sol';
+import './libs/CloneFactory.sol';
 import 'hardhat/console.sol';
 
 
-contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory {
+contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory, CloneFactory {
 
     //Events
     event PairCreated(uint32 indexed remoteDomain, address indexed remoteAddress, address indexed pair, uint pairCount);
@@ -19,7 +19,7 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
     using TypeCasts for bytes32;
     using TypeCasts for address;
 
-    address public clonefactory;
+    address public pairAddress;
 
     uint32 public LOCAL_DOMAIN;
 
@@ -54,9 +54,9 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
         _;
     }
 
-    constructor(uint32 _domain, address _cloneFactory) {
+    constructor(uint32 _domain, address _pairAddress) {
         LOCAL_DOMAIN = _domain;
-        clonefactory = _cloneFactory;
+        pairAddress = _pairAddress;
     }
 
     function initialize(address _mailbox, address _interchainGasPaymaster) external initializer() {
@@ -117,9 +117,13 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory 
 
     function contractFactory (uint32 _remoteDomain, address _remoteAddress) internal returns (address pair) {
         
-        pair = IMDexV1CloneFactory(clonefactory).nativeCloneFactory(LOCAL_DOMAIN, _remoteDomain, _remoteAddress);
+        pair = createClone(pairAddress);
 
         IMDexV1PairNative(pair).initialize(
+            LOCAL_DOMAIN,
+            _remoteDomain,
+            _remoteAddress, 
+            address(this),
             address(mailbox), 
             address(interchainGasPaymaster)
         ); 

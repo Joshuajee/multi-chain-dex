@@ -4,7 +4,7 @@ import { ROUTES } from '@/libs/enums'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Address, useAccount, useContractRead, useNetwork } from 'wagmi'
-import { convertToEther, convertToWEI, currencyByChainId, isAddressZero, supportedNetworks } from '@/libs/utils'
+import { currencyByChainId, supportedNetworks } from '@/libs/utils'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import { POSITION } from '@/libs/interfaces'
 import Pool from '@/components/utils/Pool'

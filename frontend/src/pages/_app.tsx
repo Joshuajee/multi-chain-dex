@@ -49,8 +49,6 @@ const client = createClient({
 
 export default function App({ Component, pageProps }: AppProps) {
 
-  console.log(String(process.env.NEXT_PUBLIC_ALCHEMY_SEPOLIA_RPC))
-
   return (
     <WagmiConfig client={client}>
       <Component {...pageProps} />

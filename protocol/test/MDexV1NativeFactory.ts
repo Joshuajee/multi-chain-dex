@@ -14,21 +14,17 @@ describe("MDexV1NativeFactory",  function () {
 
     async function deploy() {
 
-        const MockSignature = await ethers.getContractFactory("MockSignature");
-        const mockSignature = await MockSignature.deploy()
-
         // Contracts are deployed using the first signer/account by default
         const [owner, one, two, three, four] = await ethers.getSigners();
 
         const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
 
-        const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
+        const MDexV1PairClone = await ethers.getContractFactory("MDexV1PairNative");
 
-        const mDexV1CloneFactory  = await MDexV1CloneFactory.connect(owner).deploy();
-        const mDexV1CloneFactory2  = await MDexV1CloneFactory.connect(owner).deploy();
+        const mDexV1PairClone  = await MDexV1PairClone.connect(owner).deploy();
 
-        const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(originDomain, mDexV1CloneFactory.address);
-        const mDexV1NativeFactory2 = await MDexV1NativeFactory.connect(owner).deploy(remoteDomain, mDexV1CloneFactory2.address);
+        const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(originDomain, mDexV1PairClone.address);
+        const mDexV1NativeFactory2 = await MDexV1NativeFactory.connect(owner).deploy(remoteDomain, mDexV1PairClone.address);
 
         // MailBox
         const MockMailbox = await ethers.getContractFactory("MockMailbox");
@@ -74,10 +70,10 @@ describe("MDexV1NativeFactory",  function () {
 
         it("Domain Should be set correctly", async function () {
             const [owner] = await ethers.getSigners();
-            const MDexV1CloneFactory = await ethers.getContractFactory("MDexV1CloneFactory");
-            const mDexV1CloneFactory  = await MDexV1CloneFactory.connect(owner).deploy();
+            const MDexV1PairClone = await ethers.getContractFactory("MDexV1PairNative");
+            const mDexV1PairClone  = await MDexV1PairClone.connect(owner).deploy();
             const MDexV1NativeFactory = await ethers.getContractFactory("MDexV1NativeFactory");
-            const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(1, mDexV1CloneFactory.address);
+            const mDexV1NativeFactory = await MDexV1NativeFactory.connect(owner).deploy(1, mDexV1PairClone.address);
             expect(await mDexV1NativeFactory.LOCAL_DOMAIN()).to.be.equal(1)
         });
 

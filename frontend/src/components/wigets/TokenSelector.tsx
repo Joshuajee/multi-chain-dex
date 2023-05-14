@@ -1,8 +1,6 @@
 import React from "react";
 import { useAccount, useBalance } from 'wagmi'
-import { SUPPORTED_NETWORKS } from "@/libs/interfaces";
 import { supportedNetworks } from "@/libs/utils";
-import { CHAIN_ID } from "@/libs/enums";
 import SelectToken from "./SelectToken";
 
 
@@ -17,7 +15,6 @@ interface IProps {
 
 const TokenSelector = (props: IProps) => {
 
-
     const chain = supportedNetworks[Number(props?.chainIndex)]
 
     const { address, isConnected } = useAccount()
@@ -25,6 +22,8 @@ const TokenSelector = (props: IProps) => {
     const { data, isLoading } = useBalance({
         address: address,
         chainId: chain?.chainId,
+        enabled: chain.chainId != 0,
+        watch: true
     })
 
     const handleChangeEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +47,7 @@ const TokenSelector = (props: IProps) => {
                     props.selectable ?
                         (<SelectToken chainIndex={0} handleSelectEvent={handleSelectEvent} />)
                             :
-                        (
+                        ( 
                             <p className="min-w-[120px] cursor-pointer text-center py-2 w-full bg-gray-400 h-10 rounded-lg outline-none">
                                 {   chain?.name  }
                             </p>
@@ -56,7 +55,7 @@ const TokenSelector = (props: IProps) => {
                 }
 
                 { 
-                    isConnected && <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
+                    isConnected && chain.chainId != 0 && <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
                 }
 
             </div>
