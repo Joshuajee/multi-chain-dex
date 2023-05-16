@@ -13,7 +13,7 @@ import { BigNumber } from 'ethers'
 import AddLiquidity from '@/components/utils/buttons/AddLiquidity'
 import CreatePair from '@/components/utils/buttons/CreatePair'
 import LiquiditySuccessModal from '@/components/utils/LiquiditySuccessModal'
-import { setLazyProp } from 'next/dist/server/api-utils'
+
 
 const tokenSelected = (chainId1: number, chainId2: number): boolean => {
     if (chainId1 === chainId2) return false
@@ -96,7 +96,7 @@ export default function NewPosition() {
         chainId: pair2Details.chainId,
         args: [address],
         enabled: isAvailable,
-        watch: true
+        watch: !hasPaid
     })
 
     const getPositions = useContractRead({
@@ -204,14 +204,30 @@ export default function NewPosition() {
             setIsSuccessful(false)
             setHasPaid(false)
         }
-        
-    }, [isSuccessful, hasPaid])
-
-    console.log(hasPaid)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSuccessful])
 
     useEffect(() => {
         updatePrice()
     }, [updatePrice])
+
+    const close = useCallback(() => {
+        setIsAvaliable(false);
+        setPrice(1)
+        setAmount1(undefined)
+        setAmount2(undefined)
+        setHasSelected(false)
+        setDisable1(false)
+        setDisable2(false)
+        setSuccess(false)
+        setIsSuccessful(false)
+        setHasPaid(false)
+        setLoading(false)
+    }, [])
+
+    useEffect(() => {
+        close()
+    }, [close, success])
 
     return (
         <Layout>

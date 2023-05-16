@@ -170,11 +170,17 @@ export const tokenSelected = (chainId1: number, chainId2: number): boolean => {
 
 export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNumber): number => {
 
+    if (amountIn <= 0) return 0
+
     const amount = BigNumber.from(convertToWEI(amountIn))
 
     const num = reserve1.mul(amount)
 
     const dem = reserve2.add(amount)
+
+    console.log(num)
+
+    console.log(dem)
 
     return Number(convertToEther(num.div(dem)))
 }
