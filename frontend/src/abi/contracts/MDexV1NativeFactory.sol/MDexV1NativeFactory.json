@@ -382,6 +382,72 @@
         "type": "address"
       }
     ],
+    "name": "getUserClosedPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "id",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFees",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountIn2",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "paid",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint32",
+            "name": "remoteDomain",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct INonfungibleNativeLiquidity.LiquidityToken[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
     "name": "getUserOpenPositions",
     "outputs": [
       {
@@ -693,6 +759,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "removeLiquidityReceiver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -792,11 +881,6 @@
         "internalType": "address",
         "name": "_to",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_remoteAddress",
-        "type": "address"
       }
     ],
     "name": "swapReceiver",
@@ -815,6 +899,45 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userClosedPositions",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "remoteDomain",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "positionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "remoteAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "pair",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

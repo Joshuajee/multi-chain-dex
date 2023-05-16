@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
+    "@lottiefiles/lottie-player": "^1.7.1",
     "@types/node": "18.15.11",
     "@types/react": "18.0.35",
     "@types/react-dom": "18.0.11",

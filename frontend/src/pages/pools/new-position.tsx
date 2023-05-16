@@ -3,23 +3,23 @@ import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
 import { useCallback, useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
-import { Address, useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
+import { Address, useAccount, useContractRead } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import MDexV1PairNativeABI from "@/abi/contracts/MDexV1PairNative.sol/MDexV1PairNative.json";
-import { convertToEther, convertToWEI, getPriceRatio, isAddressZero, supportedNetworks } from '@/libs/utils'
-import LoadingButton from '@/components/utils/LoadingButton'
-import { CHAIN_ID,  GAS_FEES } from '@/libs/enums'
+import { convertToEther, isAddressZero, supportedNetworks } from '@/libs/utils'
+import { CHAIN_ID } from '@/libs/enums'
 import { POSITION, SUPPORTED_NETWORKS } from '@/libs/interfaces'
 import { BigNumber } from 'ethers'
 import AddLiquidity from '@/components/utils/buttons/AddLiquidity'
 import CreatePair from '@/components/utils/buttons/CreatePair'
+import LiquiditySuccessModal from '@/components/utils/LiquiditySuccessModal'
+
 
 const tokenSelected = (chainId1: number, chainId2: number): boolean => {
     if (chainId1 === chainId2) return false
     if (chainId1 === CHAIN_ID.NONE || chainId2 === CHAIN_ID.NONE) return false
     return true
 }
-
 
 export default function NewPosition() {
 
@@ -42,6 +42,18 @@ export default function NewPosition() {
 
     const [disable1, setDisable1] = useState(false)
     const [disable2, setDisable2] = useState(false)
+
+    const [success, setSuccess] = useState(false)
+
+    const [isSuccessful, setIsSuccessful] = useState(false)
+
+    const [hasPaid, setHasPaid] = useState(false)
+
+    const [loading, setLoading] = useState(false)
+
+    const handleClose = () => {
+        setSuccess(false)
+    }
 
     const pair1 = useContractRead({
         address: pair1Details.factoryAddress as Address,
@@ -84,7 +96,7 @@ export default function NewPosition() {
         chainId: pair2Details.chainId,
         args: [address],
         enabled: isAvailable,
-        watch: true
+        watch: !hasPaid
     })
 
     const getPositions = useContractRead({
@@ -98,11 +110,23 @@ export default function NewPosition() {
     })
 
     const updatePrice = useCallback(() => {
-        const amountIn1 = Number(convertToEther(pair2Reserve1?.data as BigNumber)) 
-        const amountIn2 = Number(convertToEther(pair2Reserve2?.data as BigNumber)) 
-        if (amountIn1 > 0 && amountIn2 > 0) {
-            setPrice(amountIn1 * amountIn2 * 100)
+
+        if (pair2Reserve1?.data && pair2Reserve1?.data) {
+            
+            const amountIn1 = pair2Reserve1.data as BigNumber
+            const amountIn2 = pair2Reserve2.data as BigNumber
+
+            console.log({amountIn1, amountIn2})
+
+            if (amountIn1.gt(amountIn2)) {
+                setPrice(Number(amountIn1.div(amountIn2).toString()))
+            } else {
+                setPrice(1 / Number(amountIn2.div(amountIn1).toString()))
+            }
+    
         }
+
+
     }, [pair2Reserve1?.data, pair2Reserve2?.data])
 
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -134,12 +158,8 @@ export default function NewPosition() {
     }, [pair1?.data, pair2?.data])
 
     useEffect(() => {
-        updatePrice()
-    }, [updatePrice])
-
-    useEffect(() => {
         if (amount1) {
-            setAmount2(price * amount1)
+            setAmount2(price * Number(amount1))
         }
     }, [amount1, pair1.data, price])
 
@@ -149,13 +169,18 @@ export default function NewPosition() {
            
             const data = (pair2pending?.data as POSITION[])?.[0]
 
+            setHasPaid(true)
+
             if ((getPositions.data as number) > 1) {
                 updatePrice()
             } else {
                 const amountIn1 = Number(convertToEther(data?.amountIn1))
                 const amountIn2 = Number(convertToEther(data?.amountIn2))
+
                 setAmount1(amountIn2)
-                setPrice(amountIn1 * amountIn2 * 100)
+                setAmount2(amountIn1)
+                setPrice(amountIn1 / amountIn2)
+
             }
 
             if (data.paid) {
@@ -165,6 +190,7 @@ export default function NewPosition() {
                 setDisable1(true)
                 setDisable2(false)
             }
+
         } else {
             setDisable1(false)
             setDisable2(false)
@@ -172,12 +198,36 @@ export default function NewPosition() {
 
     }, [pair2pending?.data, getPositions.data, updatePrice])
 
-    console.log("-------------------")
-    console.log(pair2Reserve1?.data?.toString())
-    console.log(pair2Reserve2?.data?.toString())
+    useEffect(() => {
+        if (isSuccessful && hasPaid) {
+            setSuccess(true)
+            setIsSuccessful(false)
+            setHasPaid(false)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSuccessful])
 
-    console.log(hasSelected, isAvailable)
-    console.log(!isAddressZero(pair1?.data as Address), !isAddressZero(pair2?.data as Address))
+    useEffect(() => {
+        updatePrice()
+    }, [updatePrice])
+
+    const close = useCallback(() => {
+        setIsAvaliable(false);
+        setPrice(1)
+        setAmount1(undefined)
+        setAmount2(undefined)
+        setHasSelected(false)
+        setDisable1(false)
+        setDisable2(false)
+        setSuccess(false)
+        setIsSuccessful(false)
+        setHasPaid(false)
+        setLoading(false)
+    }, [])
+
+    useEffect(() => {
+        close()
+    }, [close, success])
 
     return (
         <Layout>
@@ -263,7 +313,9 @@ export default function NewPosition() {
                                                         amount2={amount2}
                                                         symbol={pair1Details.symbol}
                                                         isSelected={hasSelected}
-                                                        disabled={disable1}
+                                                        disabled={disable1 || loading}
+                                                        setSuccess={setIsSuccessful}
+                                                        setLoadingState={setLoading}
                                                         />
                                             }
                                         </div>
@@ -286,7 +338,9 @@ export default function NewPosition() {
                                                             amount2={amount1}
                                                             symbol={pair2Details.symbol}
                                                             isSelected={hasSelected}
-                                                            disabled={disable2}
+                                                            disabled={disable2 || loading}
+                                                            setSuccess={setIsSuccessful}
+                                                            setLoadingState={setLoading}
                                                             />
 
                                                     </>
@@ -302,12 +356,12 @@ export default function NewPosition() {
                                 <h3 className='font-semibold mt-2'> Enter Amount </h3>
                                 
                                 <TokenSelector 
-                                    disableInput={disable1 || disable2}
+                                    disableInput={disable1 || disable2 || loading}
                                     selectable={false} value={amount1} 
                                     chainIndex={pairIndex1} setValue={setAmount1} />
 
                                 <TokenSelector 
-                                    disableInput={disable1 || disable2}
+                                    disableInput={disable1 || disable2 || loading}
                                     selectable={false} value={amount2} 
                                     chainIndex={pairIndex2} setValue={setAmount2} />
    
@@ -318,6 +372,12 @@ export default function NewPosition() {
                     </div>
 
                 </div>
+
+                <LiquiditySuccessModal 
+                    open={success} 
+                    handleClose={handleClose} 
+                    symbol1={pair1Details.symbol} 
+                    symbol2={pair2Details.symbol} />
 
             </Container>
 

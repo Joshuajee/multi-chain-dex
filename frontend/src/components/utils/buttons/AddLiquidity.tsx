@@ -23,6 +23,8 @@ interface IProps {
     symbol: string;
     isSelected: boolean;
     disabled: boolean;
+    setLoadingState(boolean: boolean): void;
+    setSuccess(boolean: boolean): void;
 }
 
 export default function AddLiquidity(props: IProps) {
@@ -30,7 +32,7 @@ export default function AddLiquidity(props: IProps) {
     const { 
         contract, amount1, amount2, remoteDomainId, originDomainId, 
         remoteChainId, originChainId, remoteContract, originChainName, 
-        symbol, isSelected, disabled 
+        symbol, isSelected, disabled, setLoadingState, setSuccess 
     } = props
 
     const [loading, setLoading] = useState(false)
@@ -53,7 +55,7 @@ export default function AddLiquidity(props: IProps) {
         address: contract,
         abi: MDexV1NativeFactoryABI,
         functionName: 'addLiquidity',
-        args: [remoteDomainId, convertToWEI(amount1 as number), convertToWEI(amount2 as number), GAS_FEES.ADD_LIQUIDITY, remoteContract, { value: payment }],
+        args: [remoteDomainId, convertToWEI(Number((amount1 as number)?.toFixed(10))), convertToWEI(Number((amount2 as number)?.toFixed(10))), GAS_FEES.ADD_LIQUIDITY, remoteContract, { value: payment }],
         chainId: originChainId,
     })
 
@@ -69,6 +71,8 @@ export default function AddLiquidity(props: IProps) {
         eventName: 'ReceivedMessage',
         listener(domain, sender, msg) {
             if (domain === originDomainId && contract === sender) {
+                setLoadingState(false)
+                setSuccess(true)
                 setLoading(false)
                 toast.success("Liquidity added successfully")
                 console.log(msg)
@@ -93,7 +97,7 @@ export default function AddLiquidity(props: IProps) {
     useEffect(() => {
         const gaspay = gasQuotes?.data
         if (gaspay) {
-            setPayment((gaspay as BigNumber).add(convertToWEI(amount1 as number)))
+            setPayment((gaspay as BigNumber).add(convertToWEI(Number((amount1 as number)?.toFixed(10)))))
         }
     }, [gasQuotes?.data, amount1, amount2])
 
@@ -104,10 +108,14 @@ export default function AddLiquidity(props: IProps) {
         }
     }, [addLiquidity.isError, addLiquidity.error])
 
+    useEffect(() => {
+        setLoadingState(loading)
+    }, [loading, setLoadingState])
+
     return (
         <div>
 
-            <p className='mt-2 font-semibold'>
+            <p className='mt-2 font-semibold text-center'>
                 Gas Fee: 
                 <strong className='ml-2'> {Number(convertToEther(gasQuotes?.data as number)).toFixed(4)} {symbol} </strong>
             </p>

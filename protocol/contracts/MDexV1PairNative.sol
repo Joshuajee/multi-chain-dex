@@ -21,6 +21,8 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
     using TypeCasts for address;
     using Liquidity for Liquidity.Map;
 
+    uint public constant MINIMUM_LIQUIDITY = 0.0000001 ether;
+
     //store open positions in mapping and array, with counter to track them
     uint public positionCounter = 0;
     mapping(uint => LiquidityToken) public positions;
@@ -53,25 +55,10 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
     uint private unlocked = 1;
 
-    // Modifiers
-    modifier lock() {
-        require(unlocked == 1, 'MDEX: LOCKED');
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
-
     modifier onlyFactory() {
         if (msg.sender != factory) revert('MDEX: ONLY FACTORY');
         _;
     }
-
-    // constructor(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) {
-    //     remoteAddress = _remoteAddress;
-    //     factory = _factory;
-    //     LOCAL_DOMAIN = _LOCAL_DOMAIN;
-    //     REMOTE_DOMAIN = _REMOTE_DOMAIN;
-    // }
 
     function init(uint32 _LOCAL_DOMAIN, uint32 _REMOTE_DOMAIN, address _remoteAddress, address _factory) external initializer()  {
         remoteAddress = _remoteAddress;
@@ -98,8 +85,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         return positionCounter;
     }
 
-    function collectFee(uint _positionId) public // lock 
-    {
+    function collectFee(uint _positionId) public {
         LiquidityToken storage myPosition = positions[_positionId];
         if (myPosition.owner != msg.sender) revert("MDEX: NOT OWNER");
         uint fee = myPosition.availableFees;
@@ -121,7 +107,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
     }
 
     function getPrice(uint _amountIn) public view returns(uint) {
-        return (reserve1 * _amountIn) / (_amountIn + reserve2);
+        return (reserve2 * _amountIn) / (_amountIn + reserve1);
     }
 
     function _getGas(uint _amount) internal view returns(uint) {
@@ -226,6 +212,12 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         
         LiquidityToken memory position = positions[_position];
 
+        // collect fees
+        // uint fee = position.availableFees;
+        // position.availableFees = 0;
+        // (bool success_,) = payable(msg.sender).call{value: fee}("");
+        // if (!success_) revert("MDEX: TRANSACTION FAIL");
+
         //Liquidity.Map private myPendingPositions;
 
         // Removing it from opened positons and adding to closed
@@ -244,9 +236,15 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
         investment1 -= position.amountIn1;
 
+        investment2 -= position.amountIn2;
+
         uint payout = reserve1 / percent;
 
-        reserve1 -= reserve1;
+        uint payout2 = reserve2 / percent;
+
+        reserve1 -= payout;
+
+        reserve2 -= payout2;
 
         (bool success, ) = payable(_owner).call{value: payout}("");
 

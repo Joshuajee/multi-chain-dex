@@ -3,11 +3,11 @@ import { ethers } from "hardhat";
 
 async function main() {
 
-  const DOMAIN = 97
+  const DOMAIN = 44787
   const MAILBOX = "0xCC737a94FecaeC165AbCf12dED095BB13F037685"
   const interchainGasPaymaster = "0xF90cB82a76492614D07B82a7658917f3aC811Ac1"
 
-  const MDexV1PairClone = await ethers.getContractFactory("MDexV1PairNativeClone");
+  const MDexV1PairClone = await ethers.getContractFactory("MDexV1PairNative");
 
   const mDexV1PairClone  = await MDexV1PairClone.deploy();
 
@@ -18,8 +18,7 @@ async function main() {
   const mDexV1NativeFactory = await MDexV1NativeFactory.deploy(DOMAIN, mDexV1PairClone.address);
 
   await mDexV1NativeFactory.initialize(MAILBOX, interchainGasPaymaster)
-
-  console.log("Factory: ", mDexV1PairClone.address)
+  
   console.log("Contract: ", mDexV1NativeFactory.address)
 
 }
