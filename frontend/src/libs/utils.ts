@@ -41,7 +41,7 @@ export const currencyByChainId = (chainId: number) => {
     switch (chainId) {
         case CHAIN_ID.AVALANCHE_FUJI:
             return "Fuji"
-        case CHAIN_ID.ACELO:
+        case CHAIN_ID.AFIJORES:
             return "Test BNB"
         case CHAIN_ID.MUMBAI:
             return "Matic"
@@ -57,7 +57,7 @@ export const currencyByDomainId = (domainId: DOMAIN_ID) => {
     switch (domainId) {
         case DOMAIN_ID.AVALANCHE_FUJI:
             return "Fuji"
-        case DOMAIN_ID.ACELO:
+        case DOMAIN_ID.AFIJORES:
             return "Test BNB"
         case DOMAIN_ID.MUMBAI:
             return "Matic"
@@ -72,7 +72,7 @@ export const networkNameByDomainId = (domainId: DOMAIN_ID) => {
     switch (domainId) {
         case DOMAIN_ID.AVALANCHE_FUJI:
             return "Avalanche Fuji"
-        case DOMAIN_ID.ACELO:
+        case DOMAIN_ID.AFIJORES:
             return "Alfajore"
         case DOMAIN_ID.MUMBAI:
             return "Mumbai"
@@ -139,7 +139,6 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         icon: "",
         chainId: CHAIN_ID.MUMBAI,
         domainId: DOMAIN_ID.MUMBAI,
-        mailbox: "0xCC737a94FecaeC165AbCf12dED095BB13F037685",
         factoryAddress: FACTORY_ADDRESS.MUMBAI,
         symbol: "MATIC",
     },
@@ -149,7 +148,6 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         icon: "",
         chainId: CHAIN_ID.AVALANCHE_FUJI,
         domainId: DOMAIN_ID.AVALANCHE_FUJI,
-        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
         factoryAddress: FACTORY_ADDRESS.AVALANCHE_FUJI,
         symbol: "FUJI",
     },
@@ -157,23 +155,11 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         name: "Alfajores",
         description: "",
         icon: "",
-        chainId: CHAIN_ID.ACELO,
-        domainId: DOMAIN_ID.ACELO,
-        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
-        factoryAddress: FACTORY_ADDRESS.ACELO,
-        symbol: "FUJI",
-    },
-    {
-        name: "BNB Testnet",
-        description: "",
-        icon: "",
-        chainId: CHAIN_ID.BNB_TEST,
-        domainId: DOMAIN_ID.BNB_TEST,
-        mailbox: '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
-        factoryAddress: FACTORY_ADDRESS.BNB_TEST,
-        symbol: "BNB",
+        chainId: CHAIN_ID.AFIJORES,
+        domainId: DOMAIN_ID.AFIJORES,
+        factoryAddress: FACTORY_ADDRESS.AFIJORES,
+        symbol: "ACELO",
     }
-
 ]
 
 export const tokenSelected = (chainId1: number, chainId2: number): boolean => {
@@ -194,12 +180,6 @@ export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNum
 }
 
 export const getPriceRatio = (reserve1: BigNumber, reserve2: BigNumber) : BigNumber  => {
-    
-    console.log("1 ", reserve1.toString())
-    console.log("2 ", reserve2.toString())
-    
-    console.log(" == ",(reserve2.div(reserve1)).toString())
-    
     if (reserve1.gt(reserve2)) return reserve1.div(reserve2)
     return  BigNumber.from(1).div(reserve2.div(reserve1))
 }

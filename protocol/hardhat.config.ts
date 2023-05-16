@@ -30,28 +30,16 @@ const config = {
 		only: [":MDexV1"]
 	},
 	networks: {
-		mainnet: {
-			url: 'https://mainnet.infura.io/v3/',
-			accounts: [ PRIVATE_KEY ]
-		},
 		fuji: {
 			url: 'https://api.avax-test.network/ext/C/rpc',
-			accounts: [ PRIVATE_KEY ]
-		},
-		polygon: {
-			url: 'https://polygon-rpc.com/',
 			accounts: [ PRIVATE_KEY ]
 		},
 		mumbai: {
 			url: 'https://polygon-mumbai.g.alchemy.com/v2/1yHVzG9cEm8g0IJKQA0VO-nczdGW4NgO',
 			accounts: [ PRIVATE_KEY ]
 		},
-		bsc: {
-			url: 'https://bsc-dataseed.binance.org/',
-			accounts: [ PRIVATE_KEY ]
-		},
-		bsc_testnet: {
-			url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+		afijores: {
+			url: 'https://alfajores-forno.celo-testnet.org',
 			accounts: [ PRIVATE_KEY ]
 		},
 	},

@@ -1,8 +1,8 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { WagmiConfig, createClient, configureChains, goerli, sepolia } from 'wagmi'
-import { avalancheFuji, bscTestnet, polygonMumbai } from 'wagmi/chains'
-import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { avalancheFuji, bscTestnet, celoAlfajores, polygonMumbai } from 'wagmi/chains'
+import { useEffect } from 'react'
 import { publicProvider } from 'wagmi/providers/public'
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
 import { InjectedConnector } from 'wagmi/connectors/injected'
@@ -12,10 +12,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [polygonMumbai, avalancheFuji, bscTestnet],
-  [
-    publicProvider()
-  ],
+  [polygonMumbai, avalancheFuji, celoAlfajores],
+  [publicProvider()],
 )
 
  
@@ -48,6 +46,10 @@ const client = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
+
+  useEffect(() => {
+    import("@lottiefiles/lottie-player");
+  }, [])
 
   return (
     <WagmiConfig client={client}>

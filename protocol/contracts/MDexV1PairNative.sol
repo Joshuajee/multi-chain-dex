@@ -107,7 +107,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
     }
 
     function getPrice(uint _amountIn) public view returns(uint) {
-        return (reserve1 * _amountIn) / (_amountIn + reserve2);
+        return (reserve2 * _amountIn) / (_amountIn + reserve1);
     }
 
     function _getGas(uint _amount) internal view returns(uint) {
@@ -211,6 +211,12 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
     function removeLiquidityCore(uint _position, address _owner) external onlyFactory returns(bytes32) {
         
         LiquidityToken memory position = positions[_position];
+
+        // collect fees
+        // uint fee = position.availableFees;
+        // position.availableFees = 0;
+        // (bool success_,) = payable(msg.sender).call{value: fee}("");
+        // if (!success_) revert("MDEX: TRANSACTION FAIL");
 
         //Liquidity.Map private myPendingPositions;
 

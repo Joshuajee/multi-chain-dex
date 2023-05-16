@@ -3,23 +3,23 @@ import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
 import { useCallback, useEffect, useState } from 'react'
 import SelectToken from '@/components/wigets/SelectToken'
-import { Address, useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi'
+import { Address, useAccount, useContractRead } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import MDexV1PairNativeABI from "@/abi/contracts/MDexV1PairNative.sol/MDexV1PairNative.json";
-import { convertToEther, convertToWEI, getPriceRatio, isAddressZero, supportedNetworks } from '@/libs/utils'
-import LoadingButton from '@/components/utils/LoadingButton'
-import { CHAIN_ID,  GAS_FEES } from '@/libs/enums'
+import { convertToEther, isAddressZero, supportedNetworks } from '@/libs/utils'
+import { CHAIN_ID } from '@/libs/enums'
 import { POSITION, SUPPORTED_NETWORKS } from '@/libs/interfaces'
 import { BigNumber } from 'ethers'
 import AddLiquidity from '@/components/utils/buttons/AddLiquidity'
 import CreatePair from '@/components/utils/buttons/CreatePair'
+import LiquiditySuccessModal from '@/components/utils/LiquiditySuccessModal'
+import { setLazyProp } from 'next/dist/server/api-utils'
 
 const tokenSelected = (chainId1: number, chainId2: number): boolean => {
     if (chainId1 === chainId2) return false
     if (chainId1 === CHAIN_ID.NONE || chainId2 === CHAIN_ID.NONE) return false
     return true
 }
-
 
 export default function NewPosition() {
 
@@ -42,6 +42,18 @@ export default function NewPosition() {
 
     const [disable1, setDisable1] = useState(false)
     const [disable2, setDisable2] = useState(false)
+
+    const [success, setSuccess] = useState(false)
+
+    const [isSuccessful, setIsSuccessful] = useState(false)
+
+    const [hasPaid, setHasPaid] = useState(false)
+
+    const [loading, setLoading] = useState(false)
+
+    const handleClose = () => {
+        setSuccess(false)
+    }
 
     const pair1 = useContractRead({
         address: pair1Details.factoryAddress as Address,
@@ -104,6 +116,8 @@ export default function NewPosition() {
             const amountIn1 = pair2Reserve1.data as BigNumber
             const amountIn2 = pair2Reserve2.data as BigNumber
 
+            console.log({amountIn1, amountIn2})
+
             if (amountIn1.gt(amountIn2)) {
                 setPrice(Number(amountIn1.div(amountIn2).toString()))
             } else {
@@ -118,7 +132,6 @@ export default function NewPosition() {
     const handleSelectPairIndex1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex1(e.target.value)
     }
-
 
     const handleSelectPairIndex2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setPairIndex2(e.target.value)
@@ -145,10 +158,6 @@ export default function NewPosition() {
     }, [pair1?.data, pair2?.data])
 
     useEffect(() => {
-        updatePrice()
-    }, [updatePrice])
-
-    useEffect(() => {
         if (amount1) {
             setAmount2(price * Number(amount1))
         }
@@ -160,6 +169,8 @@ export default function NewPosition() {
            
             const data = (pair2pending?.data as POSITION[])?.[0]
 
+            setHasPaid(true)
+
             if ((getPositions.data as number) > 1) {
                 updatePrice()
             } else {
@@ -169,7 +180,7 @@ export default function NewPosition() {
                 setAmount1(amountIn2)
                 setAmount2(amountIn1)
                 setPrice(amountIn1 / amountIn2)
-                
+
             }
 
             if (data.paid) {
@@ -179,12 +190,28 @@ export default function NewPosition() {
                 setDisable1(true)
                 setDisable2(false)
             }
+
         } else {
             setDisable1(false)
             setDisable2(false)
         }
 
     }, [pair2pending?.data, getPositions.data, updatePrice])
+
+    useEffect(() => {
+        if (isSuccessful && hasPaid) {
+            setSuccess(true)
+            setIsSuccessful(false)
+            setHasPaid(false)
+        }
+        
+    }, [isSuccessful, hasPaid])
+
+    console.log(hasPaid)
+
+    useEffect(() => {
+        updatePrice()
+    }, [updatePrice])
 
     return (
         <Layout>
@@ -270,7 +297,9 @@ export default function NewPosition() {
                                                         amount2={amount2}
                                                         symbol={pair1Details.symbol}
                                                         isSelected={hasSelected}
-                                                        disabled={disable1}
+                                                        disabled={disable1 || loading}
+                                                        setSuccess={setIsSuccessful}
+                                                        setLoadingState={setLoading}
                                                         />
                                             }
                                         </div>
@@ -293,7 +322,9 @@ export default function NewPosition() {
                                                             amount2={amount1}
                                                             symbol={pair2Details.symbol}
                                                             isSelected={hasSelected}
-                                                            disabled={disable2}
+                                                            disabled={disable2 || loading}
+                                                            setSuccess={setIsSuccessful}
+                                                            setLoadingState={setLoading}
                                                             />
 
                                                     </>
@@ -309,12 +340,12 @@ export default function NewPosition() {
                                 <h3 className='font-semibold mt-2'> Enter Amount </h3>
                                 
                                 <TokenSelector 
-                                    disableInput={disable1 || disable2}
+                                    disableInput={disable1 || disable2 || loading}
                                     selectable={false} value={amount1} 
                                     chainIndex={pairIndex1} setValue={setAmount1} />
 
                                 <TokenSelector 
-                                    disableInput={disable1 || disable2}
+                                    disableInput={disable1 || disable2 || loading}
                                     selectable={false} value={amount2} 
                                     chainIndex={pairIndex2} setValue={setAmount2} />
    
@@ -325,6 +356,12 @@ export default function NewPosition() {
                     </div>
 
                 </div>
+
+                <LiquiditySuccessModal 
+                    open={success} 
+                    handleClose={handleClose} 
+                    symbol1={pair1Details.symbol} 
+                    symbol2={pair2Details.symbol} />
 
             </Container>
 

@@ -39,7 +39,6 @@ export default function CreatePair(props: IProps) {
 
     const [value, setValue] = useState<string | number>(1)
 
-
     const [payment, setPayment] = useState<BigNumber>()
 
     const gasQuotes = useContractRead({
@@ -125,9 +124,10 @@ export default function CreatePair(props: IProps) {
         <div>
 
             <div className='flex justify-center'>
-                1 Matic = 
+                1 {symbol} = 
                 <input 
                     type='number'
+                    disabled={loading}
                     className='ml-2 h-6 w-20 outline-none bg-gray-200  rounded-lg px-2'
                     value={value}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}

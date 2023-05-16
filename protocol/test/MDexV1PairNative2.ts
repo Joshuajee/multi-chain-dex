@@ -179,9 +179,36 @@ describe("Liquidity Pool Test", function () {
 
             const balance1 = await ethers.provider.getBalance(owner.address);
 
+            const reserve_1_1 = await pair1Contract.reserve1()
+            const reserve_1_2 = await pair1Contract.reserve2()
+
+            const reserve_2_1 = await pair2Contract.reserve1()
+            const reserve_2_2 = await pair2Contract.reserve2()
+
+            const invest_1_1 = await pair1Contract.investment1()
+            const invest_1_2 = await pair1Contract.investment2()
+
+            const invest_2_1 = await pair2Contract.investment1()
+            const invest_2_2 = await pair2Contract.investment2()
+
+            const position1 = await pair1Contract.getPosition(1)
+            const position2 = await pair2Contract.getPosition(1)
+
             await mDexV1NativeFactory.removeLiquidity(remoteDomain, 1, 1000, mDexV1NativeFactory2.address, { value: 100 })
 
             await mockMailbox2.processNextInboundMessage()
+
+            const reserve_1_1_ = await pair1Contract.reserve1()
+            const reserve_1_2_ = await pair1Contract.reserve2()
+
+            const reserve_2_1_ = await pair2Contract.reserve1()
+            const reserve_2_2_ = await pair2Contract.reserve2()
+
+            const invest_1_1_ = await pair1Contract.investment1()
+            const invest_1_2_ = await pair1Contract.investment2()
+
+            const invest_2_1_ = await pair2Contract.investment1()
+            const invest_2_2_ = await pair2Contract.investment2()
 
             const balance1_c_2 = await ethers.provider.getBalance(pair1Contract.address);
 
@@ -195,8 +222,19 @@ describe("Liquidity Pool Test", function () {
 
             expect(balance2).to.be.greaterThan(balance1)
 
-        });
+            expect(reserve_1_1).to.be.equal(reserve_1_1_.add(position1.amountIn1))
+            expect(reserve_1_2).to.be.equal(reserve_1_2_.add(position1.amountIn2))
 
+            expect(reserve_2_1).to.be.equal(reserve_2_1_.add(position2.amountIn1))
+            expect(reserve_2_2).to.be.equal(reserve_2_2_.add(position2.amountIn2))
+
+            expect(invest_1_1).to.be.equal(invest_1_1_.add(position1.amountIn1))
+            expect(invest_1_2).to.be.equal(invest_1_2_.add(position1.amountIn2))
+
+            expect(invest_2_1).to.be.equal(invest_2_1_.add(position2.amountIn1))
+            expect(invest_2_2).to.be.equal(invest_2_2_.add(position2.amountIn2))
+
+        });
 
     })
 

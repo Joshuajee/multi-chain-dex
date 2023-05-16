@@ -23,6 +23,8 @@ interface IProps {
     symbol: string;
     isSelected: boolean;
     disabled: boolean;
+    setLoadingState(boolean: boolean): void;
+    setSuccess(boolean: boolean): void;
 }
 
 export default function AddLiquidity(props: IProps) {
@@ -30,7 +32,7 @@ export default function AddLiquidity(props: IProps) {
     const { 
         contract, amount1, amount2, remoteDomainId, originDomainId, 
         remoteChainId, originChainId, remoteContract, originChainName, 
-        symbol, isSelected, disabled 
+        symbol, isSelected, disabled, setLoadingState, setSuccess 
     } = props
 
     const [loading, setLoading] = useState(false)
@@ -69,6 +71,8 @@ export default function AddLiquidity(props: IProps) {
         eventName: 'ReceivedMessage',
         listener(domain, sender, msg) {
             if (domain === originDomainId && contract === sender) {
+                setLoadingState(false)
+                setSuccess(true)
                 setLoading(false)
                 toast.success("Liquidity added successfully")
                 console.log(msg)
@@ -103,6 +107,10 @@ export default function AddLiquidity(props: IProps) {
             setLoading(false)
         }
     }, [addLiquidity.isError, addLiquidity.error])
+
+    useEffect(() => {
+        setLoadingState(loading)
+    }, [loading, setLoadingState])
 
     return (
         <div>
