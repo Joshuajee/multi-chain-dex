@@ -67,6 +67,21 @@ export const currencyByDomainId = (domainId: DOMAIN_ID) => {
 
 }
 
+export const addressByDomainId = (domainId: DOMAIN_ID) => {
+
+    switch (domainId) {
+        case DOMAIN_ID.AVALANCHE_FUJI:
+            return FACTORY_ADDRESS.AVALANCHE_FUJI
+        case DOMAIN_ID.AFIJORES:
+            return FACTORY_ADDRESS.AFIJORES
+        case DOMAIN_ID.MUMBAI:
+            return FACTORY_ADDRESS.MUMBAI
+        default:
+            return FACTORY_ADDRESS.NONE
+    }
+
+}
+
 export const networkNameByDomainId = (domainId: DOMAIN_ID) => {
 
     switch (domainId) {
@@ -177,10 +192,6 @@ export const getPrice = (amountIn: number, reserve1: BigNumber, reserve2: BigNum
     const num = reserve1.mul(amount)
 
     const dem = reserve2.add(amount)
-
-    console.log(num)
-
-    console.log(dem)
 
     return Number(convertToEther(num.div(dem)))
 }

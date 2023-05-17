@@ -4,8 +4,9 @@ import { ROUTES } from "@/libs/enums"
 import Connection from "@/components/connection"
 
 const navs = [
-    { name: "SWAP", link: ROUTES.SWAP},
-    { name: "POOLS", link: ROUTES.POOLS}
+    { name: "Swap", link: ROUTES.SWAP},
+    { name: "Pools", link: ROUTES.POOLS},
+    { name: "Faucets", link: ROUTES.POOLS}
 ]
 
 const Navbar = () => {
@@ -24,7 +25,7 @@ const Navbar = () => {
                 {
                     navs.map((nav, index) => {
                         return (
-                            <li data-aos-delay={Number(index) * 100} data-aos="fade-down" className="mx-4" key={index}>
+                            <li data-aos-delay={Number(index) * 100} data-aos="fade-down" className="mx-2 md:mx-4" key={index}>
                                 <Link href={`${nav.link}`}>
                                     {nav.name} 
                                 </Link>

@@ -68,7 +68,7 @@ export default function Pools() {
 
                     <div 
                         className={`flex flex-col space-y-2
-                        text-gray-700 bg-white rounded-md p-4 md:px-4 shadow-lg w-full max-w-[800px] min-h-[200px] max-h-[calc(100vh_-_100px)] overflow-x-hidden
+                        text-gray-700 bg-white rounded-md p-4 md:px-4 shadow-lg w-full max-w-[800px] min-h-[200px] overflow-x-hidden
                         `}>
 
                         {

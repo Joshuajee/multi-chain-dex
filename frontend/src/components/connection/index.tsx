@@ -38,7 +38,7 @@ const Connection = () => {
             {
 
                 isConnected &&  (
-                    <div onClick={() => setShow(!show)} className='hover:cursor-pointer w-44 flex items-center cursor-pointer'>
+                    <div onClick={() => setShow(!show)} className='hover:cursor-pointer w-36 md:w-44 text-xs md:text-base flex items-center cursor-pointer'>
 
                         <AiOutlineWallet className='mr-2' size={"2em"} />
 
