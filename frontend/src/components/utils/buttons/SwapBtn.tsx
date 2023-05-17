@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount, useContractEvent, useContractWrite, useNetwork, useSwitchNetwork, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
-import { convertToWEI } from '@/libs/utils'
+import { convertToWEI, isAddressZero } from '@/libs/utils'
 import { GAS_FEES } from '@/libs/enums'
 import ModalWrapper from '../ModalWrapper'
 import WalletOptions from '../../connection/walletsOptions'
@@ -19,11 +19,16 @@ interface IProps {
     payment: number;
     chainName: string;
     tokenSelected: boolean;
+    disabled: boolean;
 }
 
 export default function SwapBtn(props: IProps) {
 
-    const { contract, amountIn, chainId, domainId, originDomainId, destinationChainId, destinationContract, chainName, payment, tokenSelected } = props
+    const { 
+        contract, amountIn, chainId, domainId, originDomainId, 
+        destinationChainId, destinationContract, chainName, payment, 
+        tokenSelected, disabled
+    } = props
 
     const { address } = useAccount()
     const { isConnected } = useAccount()
@@ -115,11 +120,12 @@ export default function SwapBtn(props: IProps) {
             toast.error(swap.error?.message)
             setLoading(false)
         }
-    }, [swap.isError, swap.error])
+    }, [swap.isError, swap.error, disabled])
 
     if (loading)
         return (
             <button 
+                disabled={disabled}
                 className={`bg-gray-500  rounded-2xl px-2 h-16 mt-2 w-full`}>
                 { loadingText }
             </button>
@@ -128,8 +134,9 @@ export default function SwapBtn(props: IProps) {
     return (
         <>
             <button 
+                disabled={disabled}
                 onClick={click} 
-                className={`${false ?  'bg-gray-200' : 'bg-green-600 hover:bg-green-700 text-white' } rounded-2xl px-2 h-16 mt-2 w-full`}>
+                className={`disabled:bg-gray-500 bg-green-600 hover:bg-green-700 text-white rounded-2xl px-2 h-16 mt-2 w-full`}>
                 { text }
             </button>
             <ModalWrapper title={"Choose Wallet"} open={showOptions} handleClose={closeOptions}>

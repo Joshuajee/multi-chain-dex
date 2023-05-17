@@ -29,6 +29,8 @@ export default function Home() {
 
   const [price, setPrice] = useState<any>()
 
+  const [error, setError] = useState(false)
+
   const pair1 = useContractRead({
     address: pair1Details.factoryAddress as Address,
     abi: MDexV1NativeFactoryABI,
@@ -86,10 +88,13 @@ export default function Home() {
   }, [pair1?.data, pair2?.data])
 
   useEffect(() => {
-    if (pair1Reserve1.data && pair1Reserve2.data) {
-      setPrice( getPrice(valueFrom as number, (pair1Reserve1.data as BigNumber), pair1Reserve2.data as BigNumber))
+    if ((pair1Reserve1.data as BigNumber)?.gt(0) && (pair1Reserve2.data as BigNumber)?.gt(0)) {
+      setPrice(getPrice(valueFrom as number, (pair1Reserve1.data as BigNumber), pair1Reserve2.data as BigNumber))
+      setError(false)
+    } else {
+      setError(true)
     }
-  }, [valueFrom, pair1Reserve1.data, pair1Reserve2.data])
+  }, [valueFrom, pair1Reserve1.data, pair1Reserve2.data, pair1Details.chainId, pair2Details.chainId])
 
   useEffect(() => {
     setValueTo(Number(price) * Number(1))
@@ -101,6 +106,7 @@ export default function Home() {
       const value = (gaspay as BigNumber).add(convertToWEI(valueFrom as number) as BigNumber)
       setPayment(value)
     }
+
   }, [gasQuotes?.data, valueFrom])
 
   return (
@@ -109,10 +115,29 @@ export default function Home() {
       <Container>
 
         <div className='flex flex-col justify-center items-center w-full'>
-
-          { gasQuotes?.data ?
-            <div>Interchain Gas: {convertToEther(gasQuotes?.data as number)} {pair1Details.symbol}</div>
-            : ""
+          { tokenSelected(pair1Details.chainId, pair2Details.chainId) &&
+            <>
+              { !error?
+                <div className="flex p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+                  <svg aria-hidden="true" className="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                  <span className="sr-only">Info</span>
+                  <div>
+                    Interchain Gas : 
+                      <strong className='ml-[1px]'> 
+                      {convertToEther(gasQuotes?.data as number)} {pair1Details.symbol}
+                      </strong>
+                  </div>
+                </div>
+                : 
+                <div className="flex p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800" role="alert">
+                  <svg aria-hidden="true" className="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                  <span className="sr-only">Warning</span>
+                  <div>
+                    This Pair Doesn&apos;t have enough Liquidity
+                  </div>
+                </div>
+              }
+            </>
           }
 
           <div 
@@ -137,6 +162,7 @@ export default function Home() {
               amountIn={valueFrom}
               chainName={pair1Details.name}
               tokenSelected={tokenSelected(pair1Details.chainId, pair2Details.chainId)}
+              disabled={error}
               />
 
           </div>

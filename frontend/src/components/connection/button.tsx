@@ -23,32 +23,17 @@ const ConnectionBtn = () => {
     }
 
     return (
-        <div>
+        <div className='text-xs md:text-base '>
 
             { !isConnected &&
                 <button 
                     onClick={() => setShowOptions(true)}
-                    className="px-6 md:px-10 rounded-lg h-10 text-sm bg-blue-800 text-white hover:bg-blue-900">
+                    className="md:px-10 rounded-lg h-4 md:h-10 text-xs md:text-base bg-blue-800 text-white hover:bg-blue-900">
                     Connect Wallet 
                 </button>
 
             }
 
-            {
-
-                isConnected &&  (
-                    <div onClick={() => setShow(!show)} className='hover:cursor-pointer hover:bg-slate-200 w-28 md:w-44 flex items-center cursor-pointer'>
-
-                        <AiOutlineWallet className='mr-2' size={16} />
-
-                        <span> {truncAddress(String(address))}  </span>    
-
-                        <RxCaretDown className='ml-2' />
-
-                    </div>
-                )
-
-            }
 
             <ConnectionInfo show={show} close={close} />
 
