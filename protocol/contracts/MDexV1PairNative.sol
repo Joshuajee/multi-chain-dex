@@ -129,22 +129,28 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
             uint currentPosition = pendingPosition[sender];
 
-            if (isPaying) positions[currentPosition].paid = true;
+            uint _amountIn1 = positions[currentPosition].amountIn1;
+            uint _amountIn2 = positions[currentPosition].amountIn2;
+
+            if (isPaying) {
+                if (amountIn1 < _amountIn1) revert("MDEX: AMOUNT TOO SMALL");
+                positions[currentPosition].paid = true;
+            }
 
             // Adding to liquidity and removing from pending
             openPositionArray.push(currentPosition);
             myOpenedPositions.add(sender, currentPosition);
             myPendingPositions.remove(sender, currentPosition);
-            reserve1 += positions[currentPosition].amountIn1;
-            reserve2 += positions[currentPosition].amountIn2;
+            reserve1 +=  _amountIn1;
+            reserve2 += _amountIn2;
 
-            investment1 += positions[currentPosition].amountIn1;
-            investment2 += positions[currentPosition].amountIn2;
+            investment1 += _amountIn1;
+            investment2 += _amountIn2;
 
             //pricing             
             kValue = (reserve1) * (reserve2);
 
-            delete pendingPosition[sender];
+            pendingPosition[sender] = 0;
 
             return currentPosition;
         }
@@ -208,27 +214,9 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         return output;
     }
 
-    function removeLiquidityCore(uint _position, address _owner) external onlyFactory returns(bytes32) {
+    function removeLiquidityCore(uint _position, address _owner) external onlyFactory returns(bytes32, bool) {
         
         LiquidityToken memory position = positions[_position];
-
-        // collect fees
-        // uint fee = position.availableFees;
-        // position.availableFees = 0;
-        // (bool success_,) = payable(msg.sender).call{value: fee}("");
-        // if (!success_) revert("MDEX: TRANSACTION FAIL");
-
-        //Liquidity.Map private myPendingPositions;
-
-        // Removing it from opened positons and adding to closed
-        // console.log(_position);
-        // openPositionArray[_position] = openPositionArray[openPositionArray.length - 1];
-        // openPositionArray.pop();
-
-  
-        // using iterable mapping to store positions
-        //myOpenedPositions.get(_position);
-        //Liquidity.Map private myClosedPositions;
 
         delete positions[_position];
 
@@ -248,9 +236,11 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
 
         (bool success, ) = payable(_owner).call{value: payout}("");
 
+        if (investment1 == 0 || investment2 == 0) return (position.id, true);
+
         if (!success) revert("MDEX: TRANSACTION FAILED");
 
-        return position.id;
+        return (position.id, false);
 
     }
 
@@ -262,7 +252,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
    
         if (_amountIn > _reserve1 && amountOut > _reserve2) revert('MDEX: INSUFFICIENT_LIQUIDITY');
 
-        uint fee = payerInvestor(_amountIn);
+        uint fee = payInvestors(_amountIn);
 
         reserve1 += _amountIn - fee;
 
@@ -279,7 +269,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         if (!success) revert("MDEX: SWAP_FAILED");
     }
 
-    function payerInvestor(uint _amountIn) internal returns (uint) {
+    function payInvestors(uint _amountIn) internal returns (uint) {
 
         uint fee = (_amountIn * FEE) / PERCENT; 
 
@@ -296,6 +286,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
             unchecked {
                 ++i;
             }
+            
         }
 
         return fee;

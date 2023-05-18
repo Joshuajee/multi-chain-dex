@@ -46,8 +46,8 @@ describe("Liquidity Pool", function () {
         //InterchainGasMaster
         const MIGP = await ethers.getContractFactory("MockInterchainGasPaymaster");
 
-        const interchainGasPaymaster1 = await MIGP.connect(owner).deploy();
-        const interchainGasPaymaster2 = await MIGP.connect(owner).deploy();
+        const interchainGasPaymaster1 = await MIGP.deploy();
+        const interchainGasPaymaster2 = await MIGP.deploy();
 
         await interchainGasPaymaster1.setExchangeRate(remoteDomain, 1)
         await interchainGasPaymaster1.setExchangeRate(originDomain, 5)
@@ -57,7 +57,7 @@ describe("Liquidity Pool", function () {
 
         await mDexV1NativeFactory2.initialize(mockMailbox2.address, interchainGasPaymaster2.address)
 
-        await mDexV1NativeFactory.createPair({remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
+        await mDexV1NativeFactory.createPair({remoteDomain, amountIn1, amountIn2, gasAmount, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
 
         await mockMailbox2.processNextInboundMessage()
 
@@ -78,7 +78,7 @@ describe("Liquidity Pool", function () {
 
         await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
 
-        mockMailbox.processNextInboundMessage()
+        await mockMailbox.processNextInboundMessage()
 
         return  { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four}
 
@@ -265,8 +265,8 @@ describe("Liquidity Pool", function () {
                 expect(await pair1Contract.reserve1()).to.be.equal(amountIn1)
                 expect(await pair1Contract.reserve2()).to.be.equal(amountIn2)
 
-                expect(await pair2Contract.reserve2()).to.be.equal(amountIn1)
                 expect(await pair2Contract.reserve1()).to.be.equal(amountIn2)
+                expect(await pair2Contract.reserve2()).to.be.equal(amountIn1)
 
             });
 
@@ -323,8 +323,6 @@ describe("Liquidity Pool", function () {
 
                 await mockMailbox.processNextInboundMessage()
 
-                await mockMailbox.processNextInboundMessage()
-
                 const balance1_2 = await ethers.provider.getBalance(pair1);
                 const balance2_2 = await ethers.provider.getBalance(pair2);
 
@@ -345,14 +343,8 @@ describe("Liquidity Pool", function () {
                 const amount_2 = ethers.utils.parseUnits("25", "ether");
                 const amountIn2_2 = ethers.utils.parseUnits("5", "ether");
 
-                const amount_3 = ethers.utils.parseUnits("10", "ether");
-                const amountIn2_3 = ethers.utils.parseUnits("2", "ether");
-
-                const amount_4 = ethers.utils.parseUnits("5", "ether");
-                const amountIn2_4 = ethers.utils.parseUnits("1", "ether");
-
                 //------1--------
-                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount_1, amountIn2_1, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount_1, amountIn2_1, gasAmount, mDexV1NativeFactory2.address, { value: gas })
 
                 await mockMailbox2.processNextInboundMessage()
 
@@ -371,20 +363,30 @@ describe("Liquidity Pool", function () {
                 //------END--------
 
                 const amountIn = ethers.utils.parseUnits("2", "ether");
-                const _gas = ethers.utils.parseUnits("2.1", "ether");
 
                 await mDexV1NativeFactory.swap(remoteDomain, amountIn, 1000, owner.address, mDexV1NativeFactory2.address, { value: gas})
 
-                await mockMailbox.processNextInboundMessage()
+                await mockMailbox2.processNextInboundMessage()
 
-                const total = BigInt(amountIn1 as any) + BigInt(amount_1 as any) + BigInt(amount_2 as any) + BigInt(amount_3 as any) + BigInt(amount_4 as any)
+                const total = amountIn1.add(amount_1).add(amount_2).add(amountIn1)
 
-                //console.log(BigInt(amount as any).plus() )
-                //expect(await pair1Contract.positions(1)).to.be.equal(BigInt(amountIn1 as any) * BigInt(1) * BigInt(amountIn as any) * / total)
+                const PERCENT = 100
 
-                console.log(await pair1Contract.positions(1))
+                console.log(total)
 
-                console.log(await pair1Contract.positions(2))
+                const fee1 = amountIn1.div(PERCENT)
+
+                const payout1 = (amountIn1.mul(fee1)).div(total);
+
+                console.log(fee1)
+
+                console.log(payout1)
+
+                //expect((await pair1Contract.positions(1)).availableFees).to.be.equal(amountIn1.mul(percent).div(total))
+
+                // console.log(await pair1Contract.positions(1))
+
+                // console.log(await pair1Contract.positions(2))
 
                 // console.log(await pair1Contract.positions(3))
 
@@ -398,7 +400,7 @@ describe("Liquidity Pool", function () {
 
             it("Owner Can withdraw fee after swap", async function () {
 
-                const { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2Contract, pair1Contract, owner, one, two, three, four } = await loadFixture(addLiquidity);
+                const { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair1Contract, owner, one, two, three, four } = await loadFixture(addLiquidity);
 
                 const amount_1 = ethers.utils.parseUnits("50", "ether");
                 const amountIn2_1 = ethers.utils.parseUnits("10", "ether");
@@ -406,14 +408,8 @@ describe("Liquidity Pool", function () {
                 const amount_2 = ethers.utils.parseUnits("25", "ether");
                 const amountIn2_2 = ethers.utils.parseUnits("5", "ether");
 
-                // const amount_3 = ethers.utils.parseUnits("10", "ether");
-                // const amountIn2_3 = ethers.utils.parseUnits("2", "ether");
-
-                // const amount_4 = ethers.utils.parseUnits("5", "ether");
-                // const amountIn2_4 = ethers.utils.parseUnits("1", "ether");
-
                 //------1--------
-                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount_1, amountIn2_1, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+                await mDexV1NativeFactory.addLiquidity(remoteDomain, amount_1, amountIn2_1, gasAmount, mDexV1NativeFactory2.address, { value: gas })
 
                 await mockMailbox2.processNextInboundMessage()
 
@@ -434,9 +430,9 @@ describe("Liquidity Pool", function () {
                 const amountIn = ethers.utils.parseUnits("2", "ether");
                 const _gas = ethers.utils.parseUnits("2.1", "ether");
 
-                await mDexV1NativeFactory.swap(remoteDomain, amountIn, 1000, owner.address, mDexV1NativeFactory2.address, { value: gas})
+                await mDexV1NativeFactory.swap(remoteDomain, amountIn, 1000, owner.address, mDexV1NativeFactory2.address, { value: _gas})
 
-                await mockMailbox.processNextInboundMessage()
+                await mockMailbox2.processNextInboundMessage()
 
                 const balance1_1 = await ethers.provider.getBalance(pair1);
                 const balance2_1 = await ethers.provider.getBalance(owner.address);
@@ -472,7 +468,11 @@ describe("Liquidity Pool", function () {
 
                 const positions = await pair1Contract.getOpenedPositionsByAddress(owner.address)
 
-                expect(positions.length).to.be.equal(1)
+                console.log(positions[1])
+
+                expect(positions.length).to.be.equal(2)
+
+                console.log((await pair2Contract.getOpenedPositionsByAddress(owner.address))[1])
 
                 expect(positions[0].amountIn1).to.be.equal(amountIn1)
                 expect(positions[0].amountIn2).to.be.equal(amountIn2)
@@ -516,8 +516,6 @@ describe("Liquidity Pool", function () {
                 await mDexV1NativeFactory2.connect(one).swap(originDomain, amountIn, 1000, owner.address, mDexV1NativeFactory.address, { value: _gas})
 
                 await mockMailbox.processNextInboundMessage()
-
-                mockMailbox.processNextInboundMessage()
 
                 await expect(pair1Contract.connect(one).collectFee(1)).to.be.revertedWith("MDEX: NOT OWNER")
 

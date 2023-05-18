@@ -8,6 +8,7 @@ import { currencyByChainId, supportedNetworks } from '@/libs/utils'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import { POSITION } from '@/libs/interfaces'
 import Pool from '@/components/utils/Pool'
+import Web3btn from '@/components/utils/buttons/Web3btn'
 
 
 
@@ -31,6 +32,7 @@ export default function Pools() {
         functionName: 'getUserOpenPositions',
         enabled: isConnected && factory != null,
         args: [address],
+        watch: true
     })
 
     useEffect(() => {
@@ -76,6 +78,22 @@ export default function Pools() {
                                 return (<Pool key={index} position={position} currency={currency} factory={factory as Address} />)
                             })
                         }
+
+                        <div className='flex justify-center items-center h-full'>
+
+                            {   
+                                isConnected ?
+                                        data.length < 1 &&
+                                            <p className='text-2xl font-bold'>
+                                                You don&apos;t have any open position
+                                            </p>
+                                            :
+                                            <div className='w-60'>
+                                                <Web3btn chain='NONE' chainId={0}>Connect</Web3btn>
+                                            </div>
+                            }
+
+                        </div>
 
                     </div>
 

@@ -40,6 +40,8 @@ export default function NewPosition() {
 
     const [hasSelected, setHasSelected] = useState(false)
 
+    const [disable, setDisable] = useState(false)
+
     const [disable1, setDisable1] = useState(false)
     const [disable2, setDisable2] = useState(false)
 
@@ -50,6 +52,8 @@ export default function NewPosition() {
     const [hasPaid, setHasPaid] = useState(false)
 
     const [loading, setLoading] = useState(false)
+
+    const [validPrice, setValidPrice] = useState(false)
 
     const handleClose = () => {
         setSuccess(false)
@@ -116,16 +120,23 @@ export default function NewPosition() {
             const amountIn1 = pair2Reserve1.data as BigNumber
             const amountIn2 = pair2Reserve2.data as BigNumber
 
-            console.log({amountIn1, amountIn2})
+            console.log(amountIn1.toString(), amountIn2.toString())
 
-            if (amountIn1.gt(amountIn2)) {
-                setPrice(Number(amountIn1.div(amountIn2).toString()))
+            if (!amountIn1.eq(0) || !amountIn2.eq(0)) {
+
+                if (amountIn1.gt(amountIn2)) {
+                    setPrice(Number(amountIn1.div(amountIn2).toString()))
+                } else {
+                    setPrice(1 / Number(amountIn2.div(amountIn1).toString()))
+                }
+
+                setValidPrice(true)
+
             } else {
-                setPrice(1 / Number(amountIn2.div(amountIn1).toString()))
+                setValidPrice(false)
             }
     
         }
-
 
     }, [pair2Reserve1?.data, pair2Reserve2?.data])
 
@@ -161,7 +172,7 @@ export default function NewPosition() {
         if (amount1) {
             setAmount2(price * Number(amount1))
         }
-    }, [amount1, pair1.data, price])
+    }, [amount1, pair1.data, price, validPrice])
 
 
     useEffect(() => {
@@ -228,6 +239,12 @@ export default function NewPosition() {
     useEffect(() => {
         close()
     }, [close, success])
+
+    useEffect(() => {
+
+    }, [])
+
+    console.log(disable1, disable2)
 
     return (
         <Layout>
