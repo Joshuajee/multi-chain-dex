@@ -252,18 +252,16 @@ contract MDexV1NativeFactory is HyperlaneConnectionClient, IMDexV1NativeFactory,
         bytes32 messageId = mailbox.dispatch(
             _remoteDomain,
             _remoteAddress.addressToBytes32(),
-            abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint32,uint256,uint256,address,address)", _id, LOCAL_DOMAIN, _amountIn1, _amountIn2, msg.sender, address(this))
+            abi.encodeWithSignature("addLiquidityReceiver(bytes32,uint32,uint256,uint256,address,address)", _id, LOCAL_DOMAIN, _amountIn2, _amountIn1, msg.sender, address(this))
         );
         
-        {
-            (bool success, ) = payable(pair).call{ value: _amountIn1}("");
+        (bool success, ) = payable(pair).call{ value: _amountIn1}("");
 
-            if (!success) revert("MDEX: Transaction Failed");
-        }
+        if (!success) revert("MDEX: Transaction Failed");
 
         payForGas(messageId, _remoteDomain, _gasAmount, _getGas(_amountIn1));
 
-        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn2, _amountIn1, _remoteDomain, msg.sender, true);   
+        uint position = IMDexV1PairNative(pair).addLiquidityCore(_id, _amountIn1, _amountIn2, _remoteDomain, msg.sender, true);   
     
         addPosition(_remoteDomain, position, msg.sender, _remoteAddress, pair);
     }

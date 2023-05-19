@@ -265,8 +265,14 @@ describe("Liquidity Pool", function () {
                 expect(await pair1Contract.reserve1()).to.be.equal(amountIn1)
                 expect(await pair1Contract.reserve2()).to.be.equal(amountIn2)
 
+                expect(await pair1Contract.investment1()).to.be.equal(amountIn1)
+                expect(await pair1Contract.investment2()).to.be.equal(amountIn2)
+
                 expect(await pair2Contract.reserve1()).to.be.equal(amountIn2)
                 expect(await pair2Contract.reserve2()).to.be.equal(amountIn1)
+
+                expect(await pair2Contract.investment1()).to.be.equal(amountIn2)
+                expect(await pair2Contract.investment2()).to.be.equal(amountIn1)
 
             });
 
@@ -372,15 +378,9 @@ describe("Liquidity Pool", function () {
 
                 const PERCENT = 100
 
-                console.log(total)
-
                 const fee1 = amountIn1.div(PERCENT)
 
                 const payout1 = (amountIn1.mul(fee1)).div(total);
-
-                console.log(fee1)
-
-                console.log(payout1)
 
                 //expect((await pair1Contract.positions(1)).availableFees).to.be.equal(amountIn1.mul(percent).div(total))
 
@@ -468,11 +468,7 @@ describe("Liquidity Pool", function () {
 
                 const positions = await pair1Contract.getOpenedPositionsByAddress(owner.address)
 
-                console.log(positions[1])
-
                 expect(positions.length).to.be.equal(2)
-
-                console.log((await pair2Contract.getOpenedPositionsByAddress(owner.address))[1])
 
                 expect(positions[0].amountIn1).to.be.equal(amountIn1)
                 expect(positions[0].amountIn2).to.be.equal(amountIn2)

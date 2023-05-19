@@ -48,19 +48,19 @@ export default function Home() {
     chainId: pair2Details.chainId
   })
 
-  const pair1Reserve1 = useContractRead({
-    address: pair1.data as Address,
+  const pair2Reserve1 = useContractRead({
+    address: pair2.data as Address,
     abi: MDexV1PairNativeABI,
     functionName: 'reserve1',
-    chainId: pair1Details.chainId,
+    chainId: pair2Details.chainId,
     enabled: isAvailable
   })
 
-  const pair1Reserve2 = useContractRead({
-    address: pair1.data as Address,
+  const pair2Reserve2 = useContractRead({
+    address: pair2.data as Address,
     abi: MDexV1PairNativeABI,
     functionName: 'reserve2',
-    chainId: pair1Details.chainId,
+    chainId: pair2Details.chainId,
     enabled: isAvailable
   })
 
@@ -88,13 +88,13 @@ export default function Home() {
   }, [pair1?.data, pair2?.data])
 
   useEffect(() => {
-    if ((pair1Reserve1.data as BigNumber)?.gt(0) && (pair1Reserve2.data as BigNumber)?.gt(0)) {
-      setPrice(getPrice(valueFrom as number, (pair1Reserve1.data as BigNumber), pair1Reserve2.data as BigNumber))
+    if ((pair2Reserve1.data as BigNumber)?.gt(0) && (pair2Reserve2.data as BigNumber)?.gt(0)) {
+      setPrice(getPrice(valueFrom as number, (pair2Reserve1.data as BigNumber), pair2Reserve2.data as BigNumber))
       setError(false)
     } else {
       setError(true)
     }
-  }, [valueFrom, pair1Reserve1.data, pair1Reserve2.data, pair1Details.chainId, pair2Details.chainId])
+  }, [valueFrom, pair2Reserve1.data, pair2Reserve2.data, pair1Details.chainId, pair2Details.chainId])
 
   useEffect(() => {
     setValueTo(Number(price) * Number(1))

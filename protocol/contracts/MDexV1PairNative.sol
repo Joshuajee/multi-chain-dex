@@ -141,6 +141,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
             openPositionArray.push(currentPosition);
             myOpenedPositions.add(sender, currentPosition);
             myPendingPositions.remove(sender, currentPosition);
+
             reserve1 +=  _amountIn1;
             reserve2 += _amountIn2;
 
@@ -150,7 +151,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
             //pricing             
             kValue = (reserve1) * (reserve2);
 
-            pendingPosition[sender] = 0;
+            delete pendingPosition[sender];
 
             return currentPosition;
         }
@@ -218,20 +219,13 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         
         LiquidityToken memory position = positions[_position];
 
-        delete positions[_position];
-
-        uint percent =  investment1 / position.amountIn1;
+        uint payout = (position.amountIn1 * reserve1) / investment1;
+        uint payout2 = (position.amountIn2 * reserve2) / investment2;
 
         investment1 -= position.amountIn1;
-
         investment2 -= position.amountIn2;
 
-        uint payout = reserve1 / percent;
-
-        uint payout2 = reserve2 / percent;
-
         reserve1 -= payout;
-
         reserve2 -= payout2;
 
         (bool success, ) = payable(_owner).call{value: payout}("");
@@ -239,6 +233,8 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
         if (investment1 == 0 || investment2 == 0) return (position.id, true);
 
         if (!success) revert("MDEX: TRANSACTION FAILED");
+
+        delete positions[_position];
 
         return (position.id, false);
 
@@ -286,7 +282,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
             unchecked {
                 ++i;
             }
-            
+
         }
 
         return fee;

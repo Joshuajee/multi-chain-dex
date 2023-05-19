@@ -55,6 +55,8 @@ export default function NewPosition() {
 
     const [validPrice, setValidPrice] = useState(false)
 
+    const [step, setStep] = useState(0)
+
     const handleClose = () => {
         setSuccess(false)
     }
@@ -120,8 +122,6 @@ export default function NewPosition() {
             const amountIn1 = pair2Reserve1.data as BigNumber
             const amountIn2 = pair2Reserve2.data as BigNumber
 
-            console.log(amountIn1.toString(), amountIn2.toString())
-
             if (!amountIn1.eq(0) || !amountIn2.eq(0)) {
 
                 if (amountIn1.gt(amountIn2)) {
@@ -170,17 +170,46 @@ export default function NewPosition() {
 
     useEffect(() => {
         if (amount1) {
-            setAmount2(price * Number(amount1))
+            setAmount2(Number((price * Number(amount1)).toFixed(6)))
         }
     }, [amount1, pair1.data, price, validPrice])
 
+    const close = useCallback(() => {
+        // setIsAvaliable(false);
+        // setPrice(1)
+        // setAmount1(undefined)
+        // setAmount2(undefined)
+        // setHasSelected(false)
+        // setDisable1(false)
+        // setDisable2(false)
+        // setSuccess(false)
+        // setIsSuccessful(false)
+        // setHasPaid(false)
+        // setLoading(false)
+    }, [])
+
+    useEffect(() => {
+        if (isSuccessful) {
+            setStep(x => x + 1)
+            setIsSuccessful(false)
+        } 
+    }, [isSuccessful])
+
+    useEffect(() => {
+        if (step > 1) {
+            setStep(0)
+            setSuccess(true)
+        } 
+    }, [step])
+
+    console.log("s: ", step)
 
     useEffect(() => {
         if ((pair2pending?.data as POSITION[])?.length > 0) {
            
             const data = (pair2pending?.data as POSITION[])?.[0]
 
-            setHasPaid(true)
+            setStep(1)
 
             if ((getPositions.data as number) > 1) {
                 updatePrice()
@@ -210,41 +239,14 @@ export default function NewPosition() {
     }, [pair2pending?.data, getPositions.data, updatePrice])
 
     useEffect(() => {
-        if (isSuccessful && hasPaid) {
-            setSuccess(true)
-            setIsSuccessful(false)
-            setHasPaid(false)
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSuccessful])
-
-    useEffect(() => {
         updatePrice()
     }, [updatePrice])
 
-    const close = useCallback(() => {
-        setIsAvaliable(false);
-        setPrice(1)
-        setAmount1(undefined)
-        setAmount2(undefined)
-        setHasSelected(false)
-        setDisable1(false)
-        setDisable2(false)
-        setSuccess(false)
-        setIsSuccessful(false)
-        setHasPaid(false)
-        setLoading(false)
-    }, [])
-
     useEffect(() => {
-        close()
-    }, [close, success])
+        if (!amount1) setDisable(true)
+        else setDisable(false)
+    }, [amount1])
 
-    useEffect(() => {
-
-    }, [])
-
-    console.log(disable1, disable2)
 
     return (
         <Layout>
@@ -330,7 +332,7 @@ export default function NewPosition() {
                                                         amount2={amount2}
                                                         symbol={pair1Details.symbol}
                                                         isSelected={hasSelected}
-                                                        disabled={disable1 || loading}
+                                                        disabled={disable1 || loading || disable}
                                                         setSuccess={setIsSuccessful}
                                                         setLoadingState={setLoading}
                                                         />
@@ -355,7 +357,7 @@ export default function NewPosition() {
                                                             amount2={amount1}
                                                             symbol={pair2Details.symbol}
                                                             isSelected={hasSelected}
-                                                            disabled={disable2 || loading}
+                                                            disabled={disable2 || loading || disable}
                                                             setSuccess={setIsSuccessful}
                                                             setLoadingState={setLoading}
                                                             />
