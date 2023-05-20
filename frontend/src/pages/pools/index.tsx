@@ -9,6 +9,7 @@ import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDex
 import { POSITION } from '@/libs/interfaces'
 import Pool from '@/components/utils/Pool'
 import Web3btn from '@/components/utils/buttons/Web3btn'
+import { ColorRing } from 'react-loader-spinner'
 
 
 
@@ -84,9 +85,24 @@ export default function Pools() {
                             {   
                                 isConnected ?
                                         data.length < 1 &&
-                                            <p className='text-2xl font-bold'>
-                                                You don&apos;t have any open position
-                                            </p>
+                                            <>
+                                            
+                                                {
+                                                    getPositions.isLoading ?
+                                                        <ColorRing visible={true} height="80"
+                                                            width="80"
+                                                            ariaLabel="blocks-loading"
+                                                            wrapperStyle={{}}
+                                                            wrapperClass="blocks-wrapper"
+                                                            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+                                                        />
+                                                    :
+                                                    <p className='text-2xl font-bold'>
+                                                        You don&apos;t have any open position
+                                                    </p>
+                                                }
+       
+                                            </>
                                             :
                                             <div className='w-60'>
                                                 <Web3btn chain='NONE' chainId={0}>Connect</Web3btn>

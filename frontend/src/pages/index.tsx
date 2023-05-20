@@ -29,8 +29,6 @@ export default function Home() {
 
   const [price, setPrice] = useState<any>()
 
-  const [priceRatio, setPriceRatio] = useState<any>()
-
   const [error, setError] = useState(false)
 
   const pair1 = useContractRead({
@@ -142,6 +140,10 @@ export default function Home() {
   //   updatePrice()
   // }, [updatePrice])
 
+  const close = () => {
+    setValueFrom(0)
+    setValueTo(0)
+  }
 
   return (
     <Layout>
@@ -149,10 +151,10 @@ export default function Home() {
       <Container>
 
         <div className='flex flex-col justify-center items-center w-full'>
-          { tokenSelected(pair1Details.chainId, pair2Details.chainId) &&
+          { tokenSelected(pair1Details.chainId, pair2Details.chainId) && !pair2Reserve1.isLoading && !pair2Reserve2.isLoading &&
             <>
               { !error?
-                <div className="flex p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+                <div className="flex w-full max-w-[450px] p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
                   <svg aria-hidden="true" className="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                   <span className="sr-only">Info</span>
                   <div>
@@ -163,7 +165,7 @@ export default function Home() {
                   </div>
                 </div>
                 : 
-                <div className="flex p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800" role="alert">
+                <div className="flex w-full max-w-[450px] p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800" role="alert">
                   <svg aria-hidden="true" className="flex-shrink-0 inline w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                   <span className="sr-only">Warning</span>
                   <div>
@@ -188,15 +190,17 @@ export default function Home() {
             <SwapBtn 
               chainId={pair1Details.chainId}
               domainId={pair2Details.domainId}
-              destinationChainId={pair2Details.chainId}
+              remoteChainId={pair2Details.chainId}
               contract={pair1Details.factoryAddress as Address}
-              destinationContract={pair2Details.factoryAddress as Address}
+              remoteContract={pair2Details.factoryAddress as Address}
               originDomainId={pair1Details.domainId}
               payment={payment}
               amountIn={valueFrom}
               chainName={pair1Details.name}
               tokenSelected={tokenSelected(pair1Details.chainId, pair2Details.chainId)}
               disabled={error}
+              payout={valueTo as number}
+              close={close}
               />
 
           </div>
