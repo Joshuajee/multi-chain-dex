@@ -39,7 +39,7 @@ const TokenSelector = (props: IProps) => {
         <div className="flex justify-between items-center bg-gray-200 rounded-2xl px-2 h-20 md:h-24 mt-2">
             
             <div>
-                <input disabled={props.disableInput} min={MIN_AMOUNT}  placeholder="0" type={"number"} className="swap-input text-3xl outline-none bg-gray-200 w-full" value={props.value} onChange={handleChangeEvent} />
+                <input step="any" disabled={props.disableInput} min={MIN_AMOUNT}  placeholder="0" type={"number"} className="swap-input text-3xl outline-none bg-gray-200 w-full" value={props.value} onChange={handleChangeEvent} />
             </div>
 
             <div className="flex flex-col  items-end">
