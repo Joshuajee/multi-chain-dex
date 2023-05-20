@@ -67,7 +67,8 @@ export default function NewPosition() {
         functionName: 'getPair',
         args: [pair1Details.chainId, pair2Details.chainId],
         chainId: pair1Details.chainId,
-        enabled: hasSelected
+        enabled: hasSelected,
+        watch: true
     })
 
     const pair2 = useContractRead({
@@ -76,7 +77,8 @@ export default function NewPosition() {
         functionName: 'getPair',
         args: [pair2Details.domainId, pair1Details.domainId],
         chainId: pair2Details.chainId,
-        enabled: hasSelected
+        enabled: hasSelected,
+        watch: true
     })
 
     const pair2Reserve1 = useContractRead({
@@ -122,12 +124,12 @@ export default function NewPosition() {
             const amountIn1 = pair2Reserve1.data as BigNumber
             const amountIn2 = pair2Reserve2.data as BigNumber
 
-            if (!amountIn1.eq(0) || !amountIn2.eq(0)) {
+            if (!amountIn1?.eq(0) || !amountIn2?.eq(0)) {
 
-                if (amountIn1.gt(amountIn2)) {
-                    setPrice(Number(amountIn1.div(amountIn2).toString()))
+                if (amountIn1?.gt(amountIn2)) {
+                    setPrice(Number(amountIn1?.div(amountIn2)?.toString()))
                 } else {
-                    setPrice(1 / Number(amountIn2.div(amountIn1).toString()))
+                    setPrice(1 / Number(amountIn2?.div(amountIn1)?.toString()))
                 }
 
                 setValidPrice(true)
@@ -201,8 +203,6 @@ export default function NewPosition() {
             setSuccess(true)
         } 
     }, [step])
-
-    console.log("s: ", step)
 
     useEffect(() => {
         if ((pair2pending?.data as POSITION[])?.length > 0) {

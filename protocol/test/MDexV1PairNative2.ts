@@ -98,10 +98,6 @@ describe("Liquidity Pool Test", function () {
 
         await mockMailbox.processNextInboundMessage()
 
-        console.log(await pair1Contract.investment1())
-
-        console.log(await pair2Contract.investment1())
-
         return { mockMailbox, mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, pair1, pair2, pair1Contract, pair2Contract, interchainGasPaymaster1, interchainGasPaymaster2, owner, one, two, three, four};
     }
 

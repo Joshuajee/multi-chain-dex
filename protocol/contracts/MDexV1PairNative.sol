@@ -133,6 +133,7 @@ contract MDexV1PairNative is  HyperlaneConnectionClient, IMDexV1PairNative {
             uint _amountIn2 = positions[currentPosition].amountIn2;
 
             if (isPaying) {
+                if (positions[currentPosition].paid) revert("MDEX: ALREADY PAID");
                 if (amountIn1 < _amountIn1) revert("MDEX: AMOUNT TOO SMALL");
                 positions[currentPosition].paid = true;
             }
