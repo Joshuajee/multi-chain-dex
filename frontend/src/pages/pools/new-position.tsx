@@ -176,19 +176,19 @@ export default function NewPosition() {
         }
     }, [amount1, pair1.data, price, validPrice])
 
-    const close = useCallback(() => {
-        // setIsAvaliable(false);
-        // setPrice(1)
-        // setAmount1(undefined)
-        // setAmount2(undefined)
-        // setHasSelected(false)
-        // setDisable1(false)
-        // setDisable2(false)
-        // setSuccess(false)
-        // setIsSuccessful(false)
-        // setHasPaid(false)
-        // setLoading(false)
-    }, [])
+    // const close = useCallback(() => {
+    //     // setIsAvaliable(false);
+    //     // setPrice(1)
+    //     // setAmount1(undefined)
+    //     // setAmount2(undefined)
+    //     // setHasSelected(false)
+    //     // setDisable1(false)
+    //     // setDisable2(false)
+    //     // setSuccess(false)
+    //     // setIsSuccessful(false)
+    //     // setHasPaid(false)
+    //     // setLoading(false)
+    // }, [])
 
     useEffect(() => {
         if (isSuccessful) {
@@ -201,6 +201,7 @@ export default function NewPosition() {
         if (step > 1) {
             setStep(0)
             setSuccess(true)
+            setHasPaid(false)
         } 
     }, [step])
 
@@ -234,9 +235,11 @@ export default function NewPosition() {
         } else {
             setDisable1(false)
             setDisable2(false)
+
+            if (step > 0) setStep(2)
         }
 
-    }, [pair2pending?.data, getPositions.data, updatePrice])
+    }, [pair2pending?.data, getPositions.data, step, updatePrice])
 
     useEffect(() => {
         updatePrice()
@@ -247,6 +250,7 @@ export default function NewPosition() {
         else setDisable(false)
     }, [amount1])
 
+    console.log("=== ", step)
 
     return (
         <Layout>

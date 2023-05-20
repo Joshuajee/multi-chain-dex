@@ -1,33 +1,36 @@
 import { useEffect, useState } from 'react'
-import { Address, useAccount, useContractEvent, useContractWrite, useNetwork, useSwitchNetwork, useWaitForTransaction } from 'wagmi'
+import { Address, useAccount, useBalance, useContractEvent, useContractWrite, useNetwork, useSwitchNetwork, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
-import { MIN_AMOUNT, convertToWEI, isAddressZero } from '@/libs/utils'
+import { MIN_AMOUNT, convertToWEI, currencyByChainId, isAddressZero } from '@/libs/utils'
 import { GAS_FEES } from '@/libs/enums'
 import ModalWrapper from '../ModalWrapper'
 import WalletOptions from '../../connection/walletsOptions'
 import { toast } from 'react-toastify';
+import SwapSuccessModal from '../SwapSuccessModal';
 
 
 interface IProps {
     contract: Address;
-    destinationContract: Address;
-    destinationChainId: number;
+    remoteContract: Address;
+    remoteChainId: number;
     originDomainId: number;
     amountIn: number | undefined;
     chainId: number;
     domainId: number;
     payment: number;
+    payout: number;
     chainName: string;
     tokenSelected: boolean;
     disabled: boolean;
+    close(): void;
 }
 
 export default function SwapBtn(props: IProps) {
 
     const { 
         contract, amountIn, chainId, domainId, originDomainId, 
-        destinationChainId, destinationContract, chainName, payment, 
-        tokenSelected, disabled
+        remoteChainId, remoteContract, chainName, payment, 
+        tokenSelected, disabled, payout, close
     } = props
 
     const { address } = useAccount()
@@ -37,7 +40,11 @@ export default function SwapBtn(props: IProps) {
     const [showOptions, setShowOptions] = useState(false)
     const [switchChain, setSwitchChain] = useState(false)
 
+    const [initailAmount, setInitialAmount] = useState(0)
+
     const [loading, setLoading] = useState(false)
+
+    const [success, setSuccess] = useState(false)
 
     const [loadingText, setLoadingText] = useState("Please Wait...")
 
@@ -47,12 +54,19 @@ export default function SwapBtn(props: IProps) {
         setShowOptions(false)
     }
 
+    const balance = useBalance({
+        address: address,
+        chainId: remoteChainId,
+        enabled: remoteChainId != 0,
+        watch: true
+    })
+
     const swap = useContractWrite({
         mode: 'recklesslyUnprepared',
         address: contract,
         abi: MDexV1NativeFactoryABI,
         functionName: 'swap',
-        args: [domainId, convertToWEI(amountIn as number), GAS_FEES.SWAP_TOKEN, address, destinationContract, { value: payment }],
+        args: [domainId, convertToWEI(amountIn as number), GAS_FEES.SWAP_TOKEN, address, remoteContract, { value: payment }],
         chainId: chainId,
     })
 
@@ -63,17 +77,18 @@ export default function SwapBtn(props: IProps) {
     })
 
     useContractEvent({
-        address: destinationContract,
+        address: remoteContract,
         abi: MDexV1NativeFactoryABI,
         eventName: 'ReceivedMessage',
         listener(domain, sender, msg) {
             if (domain === originDomainId && contract === sender) {
+                setSuccess(true)
                 setLoading(false)
                 toast.success("Swap is successful")
                 console.log(msg)
             }
         },
-        chainId: destinationChainId 
+        chainId: remoteChainId 
     })
 
     const click = () => {
@@ -82,6 +97,8 @@ export default function SwapBtn(props: IProps) {
         if (switchChain)  return switchNetwork?.(props.chainId)
 
         if (Number(amountIn) <= MIN_AMOUNT)  return 
+
+        setInitialAmount(Number(balance.data?.formatted))
 
         swap?.write?.()
     }
@@ -122,6 +139,20 @@ export default function SwapBtn(props: IProps) {
         }
     }, [swap.isError, swap.error, disabled])
 
+    const handleClose = () => {
+        close()
+        setSuccess(false)
+        setShowOptions(false)
+        setSwitchChain(false)
+        setInitialAmount(0)
+        setLoading(false)
+        setSuccess(false)
+        setLoadingText("Please Wait...")
+        setText("SWAP")
+    }
+
+    console.log("----- ",loading)
+
     if (loading)
         return (
             <button 
@@ -139,9 +170,19 @@ export default function SwapBtn(props: IProps) {
                 className={`disabled:bg-gray-500 bg-green-600 hover:bg-green-700 text-white rounded-2xl px-2 h-16 mt-2 w-full`}>
                 { text }
             </button>
+
             <ModalWrapper title={"Choose Wallet"} open={showOptions} handleClose={closeOptions}>
                 <WalletOptions close={closeOptions}/>
             </ModalWrapper>
+
+            <SwapSuccessModal 
+                open={success}  
+                handleClose={handleClose}
+                currency={currencyByChainId(remoteChainId)}
+                payout={payout}
+                initialAmount={initailAmount}
+                />
+       
         </>
     )
 }
