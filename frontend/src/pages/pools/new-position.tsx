@@ -198,11 +198,11 @@ export default function NewPosition() {
     }, [isSuccessful])
 
     useEffect(() => {
-        if (step > 1) {
-            setStep(0)
-            setSuccess(true)
-            setHasPaid(false)
-        } 
+        // if (step > 1) {
+        //     setStep(0)
+        //     setSuccess(true)
+        //     setHasPaid(false)
+        // } 
     }, [step])
 
     useEffect(() => {
@@ -236,10 +236,10 @@ export default function NewPosition() {
             setDisable1(false)
             setDisable2(false)
 
-            if (step > 0) setStep(2)
+            if (disable1  || disable2) setSuccess(true)
         }
 
-    }, [pair2pending?.data, getPositions.data, step, updatePrice])
+    }, [pair2pending?.data, getPositions.data, step, disable1, disable2, updatePrice])
 
     useEffect(() => {
         updatePrice()
