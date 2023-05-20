@@ -3,6 +3,9 @@ import { isAddress } from "ethers/lib/utils.js"
 import { Address } from "wagmi"
 import { CHAIN_ID, DOMAIN_ID, FACTORY_ADDRESS } from "./enums"
 import { SUPPORTED_NETWORKS } from "./interfaces"
+import { SUPPORTED_SYMBOLS } from "./types"
+
+export const MIN_AMOUNT = 0.000001
 
 export const dollarFormat = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -36,15 +39,15 @@ export const networkNameByChainId = (chainId: number) => {
 }
 
 
-export const currencyByChainId = (chainId: number) => {
+export const currencyByChainId = (chainId: number) : SUPPORTED_SYMBOLS => {
 
     switch (chainId) {
         case CHAIN_ID.AVALANCHE_FUJI:
-            return "Fuji"
+            return "AVAX"
         case CHAIN_ID.AFIJORES:
-            return "Test BNB"
+            return "CELO"
         case CHAIN_ID.MUMBAI:
-            return "Matic"
+            return "MATIC"
         default:
             return ""
     }
@@ -52,15 +55,15 @@ export const currencyByChainId = (chainId: number) => {
 }
 
 
-export const currencyByDomainId = (domainId: DOMAIN_ID) => {
+export const currencyByDomainId = (domainId: DOMAIN_ID): SUPPORTED_SYMBOLS => {
 
     switch (domainId) {
         case DOMAIN_ID.AVALANCHE_FUJI:
-            return "Fuji"
+            return "AVAX"
         case DOMAIN_ID.AFIJORES:
-            return "Test BNB"
+            return "CELO"
         case DOMAIN_ID.MUMBAI:
-            return "Matic"
+            return "MATIC"
         default:
             return ""
     }
@@ -140,7 +143,7 @@ export const isAddressZero = (address: Address) => {
 
 export const supportedNetworks : SUPPORTED_NETWORKS [] = [
     {
-        name: "Select Currency",
+        name: "Select Network",
         description: "",
         icon: "",
         chainId: CHAIN_ID.NONE,
@@ -164,7 +167,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.AVALANCHE_FUJI,
         domainId: DOMAIN_ID.AVALANCHE_FUJI,
         factoryAddress: FACTORY_ADDRESS.AVALANCHE_FUJI,
-        symbol: "FUJI",
+        symbol: "AVAX",
     },
     {
         name: "Alfajores",
@@ -173,7 +176,7 @@ export const supportedNetworks : SUPPORTED_NETWORKS [] = [
         chainId: CHAIN_ID.AFIJORES,
         domainId: DOMAIN_ID.AFIJORES,
         factoryAddress: FACTORY_ADDRESS.AFIJORES,
-        symbol: "ACELO",
+        symbol: "CELO",
     }
 ]
 
