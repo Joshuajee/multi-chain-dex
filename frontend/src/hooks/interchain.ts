@@ -13,13 +13,14 @@ export interface IInterchainProperties {
     originDomainId: number;
     originChainId: number;
     remoteDomainId: number;
+    position: BigNumber;
 }
 
 export const useInterChain = (properties:  IInterchainProperties) => {
 
     const { 
         contract, remoteDomainId, originDomainId, 
-        remoteChainId, originChainId, remoteContract
+        remoteChainId, originChainId, remoteContract, position
     } = properties
 
     const [loading, setLoading] = useState(false)
@@ -27,6 +28,8 @@ export const useInterChain = (properties:  IInterchainProperties) => {
     const [loadingText, setLoadingText] = useState("Please Wait...")
 
     const [payment, setPayment] = useState<BigNumber>()
+
+    const [success, setSuccess] = useState(false)
 
     const gasQuotes = useContractRead({
         address: contract as Address,
@@ -41,7 +44,7 @@ export const useInterChain = (properties:  IInterchainProperties) => {
         address: contract,
         abi: MDexV1NativeFactoryABI,
         functionName: 'removeLiquidity',
-        args: [],
+        args: [remoteDomainId, position, GAS_FEES.REMOVE_LIQUIDITY, remoteContract, { value: payment}],
         chainId: originChainId,
     })
 
@@ -51,6 +54,10 @@ export const useInterChain = (properties:  IInterchainProperties) => {
         enabled: removeLiquidity.data != undefined 
     })
 
+    const onClick = () => {
+        removeLiquidity.write()
+    }
+
     useContractEvent({
         address: remoteContract,
         abi: MDexV1NativeFactoryABI,
@@ -58,13 +65,12 @@ export const useInterChain = (properties:  IInterchainProperties) => {
         listener(domain, sender, msg) {
             if (domain === originDomainId && contract === sender) {
                 setLoading(false)
-                toast.success("Liquidity Removed Successfully")
+                setSuccess(true)
                 console.log(msg)
             }
         },
         chainId: remoteChainId 
     })
-
 
     useEffect(() => {
         if (removeLiquidity.isLoading) {
@@ -78,7 +84,6 @@ export const useInterChain = (properties:  IInterchainProperties) => {
             //setLoading(false)
         }
     }, [removeLiquidity.isLoading, isLoading])
-
 
     useEffect(() => {
         const gaspay = gasQuotes?.data
@@ -96,7 +101,7 @@ export const useInterChain = (properties:  IInterchainProperties) => {
 
 
 
-    return { loading, loadingText }
+    return { loading, loadingText, payment, success, onClick }
 
 }
 

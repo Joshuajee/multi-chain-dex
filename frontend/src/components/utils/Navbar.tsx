@@ -6,7 +6,7 @@ import Connection from "@/components/connection"
 const navs = [
     { name: "Swap", link: ROUTES.SWAP},
     { name: "Pools", link: ROUTES.POOLS},
-    { name: "Faucets", link: ROUTES.POOLS}
+    { name: "Faucets", link: ROUTES.FAUCETS}
 ]
 
 const Navbar = () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Address, useContractRead, useContractWrite, useNetwork, useSwitchNetwork } from 'wagmi'
 import { addressByDomainId, convertToEther, convertToWEI, currencyByChainId, currencyByDomainId, networkNameByDomainId, supportedNetworks } from '@/libs/utils'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import { DOMAIN_ID } from '@/libs/enums';
 import ModalWrapper from './ModalWrapper';
 import { IInterchainProperties, useInterChain } from '@/hooks/interchain';
+import { BigNumber } from '@ethersproject/bignumber';
+import { Bars } from  'react-loader-spinner'
 
 interface IProps {
     position: POSITION,
@@ -29,7 +31,8 @@ export default function Pool(props: IProps) {
         originDomainId: chain?.id as number,
         remoteContract: addressByDomainId(position.remoteDomain as DOMAIN_ID) as Address, 
         remoteChainId: position.remoteDomain as DOMAIN_ID,
-        remoteDomainId: position.remoteDomain as DOMAIN_ID
+        remoteDomainId: position.remoteDomain as DOMAIN_ID,
+        position: position.tokenId
     }
 
     const [show, setShow] = useState(false)
@@ -53,8 +56,6 @@ export default function Pool(props: IProps) {
 
     const removeLiquidity = useInterChain(interchainProps)
 
-    console.log(removeLiquidity)
-
     useEffect(() => {
         if (collect.isError) {
             toast.error(collect.error?.message)
@@ -67,9 +68,17 @@ export default function Pool(props: IProps) {
         }
     }, [collect.isSuccess])
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
+        if (removeLiquidity.loading) return
         setShow(false)
-    }
+    }, [removeLiquidity.loading])
+
+    useEffect(() => {
+        if (removeLiquidity.success) {
+            handleClose()
+            toast.success("Liquidity Removed Successfully")
+        }
+    }, [removeLiquidity.success, handleClose])
 
     return (
         <div className='font-medium border-cyan-700 border-[1px] p-2 rounded-md'> 
@@ -105,10 +114,21 @@ export default function Pool(props: IProps) {
             </div>
 
             <ModalWrapper open={show} title='Remove Position' handleClose={handleClose}>
+                <div className='flex flex-col items-center'>
+                    <Bars
+                        height="80"
+                        width="80"
+                        color="#4fa94d"
+                        ariaLabel="bars-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                        visible={removeLiquidity.loading}
+                        />
+                    {removeLiquidity.loading && removeLiquidity.loadingText}
+                </div>
                 <div className="flex flex-col justify-center gap-2 mt-4">
 
-
-                    <h3 className='text-center font-semibold'>Gas Fee: </h3>
+                    <h3 className='text-center font-semibold'>Gas Fee: {convertToEther(removeLiquidity.payment as BigNumber)} {currencyByChainId(chain?.id as DOMAIN_ID) } </h3>
 
                     <h3 className='text-center'>Are You sure you want to remove this position?</h3>
 
@@ -130,11 +150,11 @@ export default function Pool(props: IProps) {
 
                     <div className='flex flex-col md:flex-row justify-center gap-4 mt-2'>
 
-                        <button className="bg-red-500 hover:bg-red-600 text-white w-20 p-2 rounded-lg">
+                        <button disabled={removeLiquidity.loading} onClick={removeLiquidity.onClick} className="bg-red-500 hover:bg-red-600 disabled:bg-gray-500 disabled:hover:bg-gray-600 text-white w-20 p-2 rounded-lg">
                             Yes
                         </button>
 
-                        <button onClick={handleClose} className="bg-gray-500 hover:bg-gray-600 text-white w-20 p-2 rounded-lg">
+                        <button disabled={removeLiquidity.loading} onClick={handleClose} className="bg-gray-500 hover:bg-gray-600 text-white w-20 p-2 rounded-lg">
                             No
                         </button>
 

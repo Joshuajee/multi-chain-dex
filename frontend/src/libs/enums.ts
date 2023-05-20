@@ -2,6 +2,7 @@ export enum ROUTES {
     SWAP = "/",
     TOKENS = "/tokens",
     POOLS = "/pools",
+    FAUCETS = "/faucets",
     NEW_POSITION = "/pools/new-position"
 }
 
@@ -21,9 +22,9 @@ export enum DOMAIN_ID {
 
 export enum FACTORY_ADDRESS {
     NONE = 0,
-    AVALANCHE_FUJI = "0x08A778a42D49fD56bDDDA55dFe9c5aA8766eF6eE",
-    AFIJORES = "0x86f09775afEEBBffC05E70C4Af8663e8960D2ca3",
-    MUMBAI = "0xa0Da51F0c0578973D6A3d8E83Dec9Da5d2f2911d"
+    AVALANCHE_FUJI = "0xaaE37b1905F5461BAAC7C871fDa7462bd5D748E9",
+    AFIJORES = "0xB7a9a945538DfEb40c5F1654Ad469aA51936b13d",
+    MUMBAI = "0xAc2b2C0A8eF52C5426387F6F9D4665038b0AaE72"
 }  
 
 export enum GAS_FEES {

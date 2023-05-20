@@ -9,10 +9,13 @@ describe("Liquidity Pool Test", function () {
     const remoteDomain = 2000
 
     const amountIn1 = ethers.utils.parseUnits("100", "ether");
-    const amountIn2 = ethers.utils.parseUnits("20", "ether");
+    const amountIn2 = ethers.utils.parseUnits("10", "ether");
 
-    const gas = ethers.utils.parseUnits("101", "ether");
+    const gas = ethers.utils.parseUnits("11", "ether");
     const gasAmount = ethers.utils.parseUnits("0.01", "ether");
+
+    const gasAmount1 = amountIn1.add(ethers.utils.parseUnits("0.01", "ether"));
+    const gasAmount2 = amountIn2.add(ethers.utils.parseUnits("0.01", "ether"));
 
 
     async function deploy() {
@@ -44,8 +47,8 @@ describe("Liquidity Pool Test", function () {
         //InterchainGasMaster
         const MIGP = await ethers.getContractFactory("MockInterchainGasPaymaster");
 
-        const interchainGasPaymaster1 = await MIGP.connect(owner).deploy();
-        const interchainGasPaymaster2 = await MIGP.connect(owner).deploy();
+        const interchainGasPaymaster1 = await MIGP.deploy();
+        const interchainGasPaymaster2 = await MIGP.deploy();
 
         await interchainGasPaymaster1.setExchangeRate(remoteDomain, 1)
         await interchainGasPaymaster1.setExchangeRate(originDomain, 5)
@@ -55,7 +58,7 @@ describe("Liquidity Pool Test", function () {
 
         await mDexV1NativeFactory2.initialize(mockMailbox2.address, interchainGasPaymaster2.address)
 
-        await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gas })
+        await mDexV1NativeFactory.createPair({ remoteDomain, amountIn1, amountIn2, gasAmount: 10, remoteAddress: mDexV1NativeFactory2.address }, { value: gasAmount1 })
 
         await mockMailbox2.processNextInboundMessage()
 
@@ -67,31 +70,31 @@ describe("Liquidity Pool Test", function () {
 
         const pair2Contract = await ethers.getContractAt("MDexV1PairNative", pair2);
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gasAmount2})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gasAmount1})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gasAmount2})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gasAmount1})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gasAmount2})
 
         await mockMailbox.processNextInboundMessage()
 
-        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+        await mDexV1NativeFactory.addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gasAmount1})
 
         await mockMailbox2.processNextInboundMessage()
 
-        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gas})
+        await mDexV1NativeFactory2.addLiquidity(originDomain, amountIn2, amountIn1, gasAmount, mDexV1NativeFactory.address, { value: gasAmount2})
 
         await mockMailbox.processNextInboundMessage()
 
@@ -124,7 +127,7 @@ describe("Liquidity Pool Test", function () {
 
             const { mockMailbox2, one, mDexV1NativeFactory, mDexV1NativeFactory2 } = await loadFixture(deploy);
 
-            await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gas})
+            await mDexV1NativeFactory.connect(one).addLiquidity(remoteDomain, amountIn1, amountIn2, gasAmount, mDexV1NativeFactory2.address, { value: gasAmount1})
 
             await mockMailbox2.processNextInboundMessage()
 
@@ -194,7 +197,7 @@ describe("Liquidity Pool Test", function () {
             const position1 = await pair1Contract.getPosition(1)
             const position2 = await pair2Contract.getPosition(1)
 
-            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 1, 1000, mDexV1NativeFactory2.address, { value: 100 })
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 1, gasAmount, mDexV1NativeFactory2.address, { value: gas })
 
             await mockMailbox2.processNextInboundMessage()
 
@@ -236,7 +239,48 @@ describe("Liquidity Pool Test", function () {
 
         });
 
-    })
+        it("Should delete Pair when all Liquidity is Removed", async function () {
 
+            const { mockMailbox2, mDexV1NativeFactory, mDexV1NativeFactory2, owner, pair1Contract, pair2Contract } = await loadFixture(deploy);
+
+            const pair1 = await mDexV1NativeFactory.getPair(originDomain, remoteDomain)
+
+            const pair2 = await mDexV1NativeFactory2.getPair(originDomain, remoteDomain)
+
+            console.log(await pair1Contract.investment1())
+
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 1, 1000, mDexV1NativeFactory2.address, { value: gas })
+
+            await mockMailbox2.processNextInboundMessage()
+
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 2, 1000, mDexV1NativeFactory2.address, { value: gas })
+
+            await mockMailbox2.processNextInboundMessage()
+
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 3, 1000, mDexV1NativeFactory2.address, { value: 100 })
+
+            await mockMailbox2.processNextInboundMessage()
+
+            await mDexV1NativeFactory.removeLiquidity(remoteDomain, 4, 1000, mDexV1NativeFactory2.address, { value: 100 })
+
+            await mockMailbox2.processNextInboundMessage()
+
+            const pair1_ = await mDexV1NativeFactory.getPair(originDomain, remoteDomain)
+
+            const pair2_ = await mDexV1NativeFactory2.getPair(originDomain, remoteDomain)
+
+            const opened_1 = await mDexV1NativeFactory.getUserOpenPositions(owner.address)
+
+            const opened_2 = await mDexV1NativeFactory2.getUserOpenPositions(owner.address)
+
+            expect(await mDexV1NativeFactory.getPair(originDomain, remoteDomain)).to.be.equal(ethers.constants.AddressZero)
+
+            expect(await mDexV1NativeFactory2.getPair(originDomain, remoteDomain)).to.be.equal(ethers.constants.AddressZero)
+
+            expect(opened_1.length).to.be.equal(opened_2.length)
+
+        });
+
+    })
 
 });

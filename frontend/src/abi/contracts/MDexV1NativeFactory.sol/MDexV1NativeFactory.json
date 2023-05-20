@@ -739,7 +739,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_position",
+        "name": "_tokenId",
         "type": "uint256"
       },
       {

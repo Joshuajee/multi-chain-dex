@@ -1,7 +1,7 @@
 import TokenSelector from '@/components/wigets/TokenSelector'
 import Container from '@/components/utils/Container'
 import Layout from '@/components/utils/Layout'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Address, useContractRead, } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
 import MDexV1PairNativeABI from "@/abi/contracts/MDexV1PairNative.sol/MDexV1PairNative.json";
@@ -29,6 +29,8 @@ export default function Home() {
 
   const [price, setPrice] = useState<any>()
 
+  const [priceRatio, setPriceRatio] = useState<any>()
+
   const [error, setError] = useState(false)
 
   const pair1 = useContractRead({
@@ -48,19 +50,19 @@ export default function Home() {
     chainId: pair2Details.chainId
   })
 
-  const pair1Reserve1 = useContractRead({
-    address: pair1.data as Address,
+  const pair2Reserve1 = useContractRead({
+    address: pair2.data as Address,
     abi: MDexV1PairNativeABI,
     functionName: 'reserve1',
-    chainId: pair1Details.chainId,
+    chainId: pair2Details.chainId,
     enabled: isAvailable
   })
 
-  const pair1Reserve2 = useContractRead({
-    address: pair1.data as Address,
+  const pair2Reserve2 = useContractRead({
+    address: pair2.data as Address,
     abi: MDexV1PairNativeABI,
     functionName: 'reserve2',
-    chainId: pair1Details.chainId,
+    chainId: pair2Details.chainId,
     enabled: isAvailable
   })
 
@@ -72,6 +74,33 @@ export default function Home() {
     chainId: pair1Details.chainId,
     enabled: tokenSelected(pair1Details.chainId, pair2Details.chainId)
   })
+
+
+  const updatePrice = useCallback(() => {
+
+    if (pair2Reserve1?.data && pair2Reserve1?.data) {
+        
+        const amountIn1 = pair2Reserve1.data as BigNumber
+        const amountIn2 = pair2Reserve2.data as BigNumber
+
+        if (!amountIn1?.eq(0) || !amountIn2?.eq(0)) {
+
+            if (amountIn1?.gt(amountIn2)) {
+                setPriceRatio(Number(amountIn1?.div(amountIn2)?.toString()))
+            } else {
+                setPriceRatio(1 / Number(amountIn2?.div(amountIn1)?.toString()))
+            }
+
+        //    setValidPrice(true)
+
+        } else {
+        //    setValidPrice(false)
+        }
+
+    }
+
+}, [pair2Reserve1?.data, pair2Reserve2?.data])
+
 
   useEffect(() => {
     setPair1Details(supportedNetworks[chainIdFrom as number])
@@ -88,13 +117,13 @@ export default function Home() {
   }, [pair1?.data, pair2?.data])
 
   useEffect(() => {
-    if ((pair1Reserve1.data as BigNumber)?.gt(0) && (pair1Reserve2.data as BigNumber)?.gt(0)) {
-      setPrice(getPrice(valueFrom as number, (pair1Reserve1.data as BigNumber), pair1Reserve2.data as BigNumber))
+    if ((pair2Reserve1.data as BigNumber)?.gt(0) && (pair2Reserve2.data as BigNumber)?.gt(0)) {
+      setPrice(getPrice(valueFrom as number, (pair2Reserve1.data as BigNumber), pair2Reserve2.data as BigNumber))
       setError(false)
     } else {
       setError(true)
     }
-  }, [valueFrom, pair1Reserve1.data, pair1Reserve2.data, pair1Details.chainId, pair2Details.chainId])
+  }, [valueFrom, pair2Reserve1.data, pair2Reserve2.data, pair1Details.chainId, pair2Details.chainId])
 
   useEffect(() => {
     setValueTo(Number(price) * Number(1))
@@ -108,6 +137,12 @@ export default function Home() {
     }
 
   }, [gasQuotes?.data, valueFrom])
+
+  useEffect(() => {
+    updatePrice()
+  }, [updatePrice])
+
+  console.log(priceRatio)
 
   return (
     <Layout>
