@@ -2,6 +2,7 @@ import React from "react";
 import { useAccount, useBalance } from 'wagmi'
 import { MIN_AMOUNT, supportedNetworks } from "@/libs/utils";
 import SelectToken from "./SelectToken";
+import { TailSpin } from "react-loader-spinner";
 
 
 interface IProps {
@@ -55,7 +56,20 @@ const TokenSelector = (props: IProps) => {
                 }
 
                 { 
-                    isConnected && chain.chainId != 0 && <p className="mt-2 text-sm font-normal" >Balance: {Number(data?.formatted?.toString())?.toFixed(4)}</p>
+                    isConnected && chain.chainId != 0 && 
+                        <div className="mt-2 text-sm font-normal flex" >
+                            <p className="mr-[1px]">Balance:  </p> 
+                            {
+                                isLoading ?
+                                    <div className="ml-2">
+                                        <TailSpin height="20" width="20" 
+                                            color="#4fa94d" ariaLabel="tail-spin-loading" 
+                                            radius="2" wrapperStyle={{}} wrapperClass="" visible={true}/>
+                                    </div>
+                                    :
+                                    <p className="ml-[1px]"> {Number(data?.formatted?.toString())?.toFixed(4)} </p>
+                            }   
+                        </div>
                 }
 
             </div>

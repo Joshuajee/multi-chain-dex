@@ -151,7 +151,7 @@ export default function Home() {
       <Container>
 
         <div className='flex flex-col justify-center items-center w-full'>
-          { tokenSelected(pair1Details.chainId, pair2Details.chainId) &&
+          { tokenSelected(pair1Details.chainId, pair2Details.chainId) && !pair2Reserve1.isLoading && !pair2Reserve2.isLoading &&
             <>
               { !error?
                 <div className="flex w-full max-w-[450px] p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">

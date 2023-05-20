@@ -49,13 +49,9 @@ export default function NewPosition() {
 
     const [isSuccessful, setIsSuccessful] = useState(false)
 
-    const [hasPaid, setHasPaid] = useState(false)
-
     const [loading, setLoading] = useState(false)
 
     const [validPrice, setValidPrice] = useState(false)
-
-    const [step, setStep] = useState(0)
 
     const handleClose = () => {
         setSuccess(false)
@@ -103,8 +99,7 @@ export default function NewPosition() {
         functionName: 'getPendingPositionsByAddress',
         chainId: pair2Details.chainId,
         args: [address],
-        enabled: isAvailable,
-        watch: !hasPaid
+        enabled: isAvailable
     })
 
     const getPositions = useContractRead({
@@ -191,26 +186,9 @@ export default function NewPosition() {
     // }, [])
 
     useEffect(() => {
-        if (isSuccessful) {
-            setStep(x => x + 1)
-            setIsSuccessful(false)
-        } 
-    }, [isSuccessful])
-
-    useEffect(() => {
-        // if (step > 1) {
-        //     setStep(0)
-        //     setSuccess(true)
-        //     setHasPaid(false)
-        // } 
-    }, [step])
-
-    useEffect(() => {
         if ((pair2pending?.data as POSITION[])?.length > 0) {
            
             const data = (pair2pending?.data as POSITION[])?.[0]
-
-            setStep(1)
 
             if ((getPositions.data as number) > 1) {
                 updatePrice()
@@ -235,11 +213,10 @@ export default function NewPosition() {
         } else {
             setDisable1(false)
             setDisable2(false)
-
             if (disable1  || disable2) setSuccess(true)
         }
 
-    }, [pair2pending?.data, getPositions.data, step, disable1, disable2, updatePrice])
+    }, [pair2pending?.data, getPositions.data, disable1, disable2, updatePrice])
 
     useEffect(() => {
         updatePrice()
@@ -249,8 +226,6 @@ export default function NewPosition() {
         if (!amount1) setDisable(true)
         else setDisable(false)
     }, [amount1])
-
-    console.log("=== ", step)
 
     return (
         <Layout>

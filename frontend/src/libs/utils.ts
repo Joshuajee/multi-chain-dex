@@ -120,9 +120,10 @@ export const convertToEther = (price: number | BigNumber) => {
     return (ethers.utils.formatUnits(price.toString(), 'ether')).toString()
 }
 
-export const convertToWEI = (amount: number | BigNumber) => {
+export const convertToWEI = (amount: number) => {
     if (!amount) return 0
-    return Number(amount) <= 0 ? 0 : ethers.utils.parseUnits(String(amount), 'ether')
+    if (amount < MIN_AMOUNT) return 0
+    return Number(amount) <= 0 ? 0 : ethers.utils.parseUnits(amount.toString(), 'ether')
 }
 
 export const  removeDecimal = (price: number, dicimal: number) => {

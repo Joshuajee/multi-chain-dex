@@ -150,9 +150,7 @@ export default function SwapBtn(props: IProps) {
         setLoadingText("Please Wait...")
         setText("SWAP")
     }
-
-    console.log("----- ",loading)
-
+    
     if (loading)
         return (
             <button 
