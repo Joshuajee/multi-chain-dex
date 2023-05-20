@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount, useContractEvent, useContractWrite, useNetwork, useSwitchNetwork, useWaitForTransaction } from 'wagmi'
 import MDexV1NativeFactoryABI from "@/abi/contracts/MDexV1NativeFactory.sol/MDexV1NativeFactory.json";
-import { convertToWEI, isAddressZero } from '@/libs/utils'
+import { MIN_AMOUNT, convertToWEI, isAddressZero } from '@/libs/utils'
 import { GAS_FEES } from '@/libs/enums'
 import ModalWrapper from '../ModalWrapper'
 import WalletOptions from '../../connection/walletsOptions'
@@ -81,7 +81,7 @@ export default function SwapBtn(props: IProps) {
 
         if (switchChain)  return switchNetwork?.(props.chainId)
 
-        if (Number(amountIn) <= 0)  return 
+        if (Number(amountIn) <= MIN_AMOUNT)  return 
 
         swap?.write?.()
     }
@@ -98,7 +98,7 @@ export default function SwapBtn(props: IProps) {
         if (!tokenSelected) setText("Please Select Networks")
         else if (!isConnected) setText("Connect Wallet")
         else if (switchChain) setText( `Switch to ${chainName}`)
-        else if (Number(amountIn) <= 0) setText("Amount Must be creater than 0.0001")
+        else if (Number(amountIn) <= MIN_AMOUNT) setText(`Amount Must be creater than ${MIN_AMOUNT}`)
         else setText("SWAP")
     }, [isConnected, switchChain, chainName, amountIn, tokenSelected])
 

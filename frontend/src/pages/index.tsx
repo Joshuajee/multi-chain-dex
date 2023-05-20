@@ -76,30 +76,30 @@ export default function Home() {
   })
 
 
-  const updatePrice = useCallback(() => {
+//   const updatePrice = useCallback(() => {
 
-    if (pair2Reserve1?.data && pair2Reserve1?.data) {
+//     if (pair2Reserve1?.data && pair2Reserve1?.data) {
         
-        const amountIn1 = pair2Reserve1.data as BigNumber
-        const amountIn2 = pair2Reserve2.data as BigNumber
+//         const amountIn1 = pair2Reserve1.data as BigNumber
+//         const amountIn2 = pair2Reserve2.data as BigNumber
 
-        if (!amountIn1?.eq(0) || !amountIn2?.eq(0)) {
+//         if (!amountIn1?.eq(0) || !amountIn2?.eq(0)) {
 
-            if (amountIn1?.gt(amountIn2)) {
-                setPriceRatio(Number(amountIn1?.div(amountIn2)?.toString()))
-            } else {
-                setPriceRatio(1 / Number(amountIn2?.div(amountIn1)?.toString()))
-            }
+//             if (amountIn1?.gt(amountIn2)) {
+//                 setPriceRatio(Number(amountIn1?.div(amountIn2)?.toString()))
+//             } else {
+//                 setPriceRatio(1 / Number(amountIn2?.div(amountIn1)?.toString()))
+//             }
 
-        //    setValidPrice(true)
+//         //    setValidPrice(true)
 
-        } else {
-        //    setValidPrice(false)
-        }
+//         } else {
+//         //    setValidPrice(false)
+//         }
 
-    }
+//     }
 
-}, [pair2Reserve1?.data, pair2Reserve2?.data])
+// }, [pair2Reserve1?.data, pair2Reserve2?.data])
 
 
   useEffect(() => {
@@ -138,11 +138,10 @@ export default function Home() {
 
   }, [gasQuotes?.data, valueFrom])
 
-  useEffect(() => {
-    updatePrice()
-  }, [updatePrice])
+  // useEffect(() => {
+  //   updatePrice()
+  // }, [updatePrice])
 
-  console.log(priceRatio)
 
   return (
     <Layout>

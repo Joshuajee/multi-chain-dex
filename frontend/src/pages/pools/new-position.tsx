@@ -124,12 +124,12 @@ export default function NewPosition() {
             const amountIn1 = pair2Reserve1.data as BigNumber
             const amountIn2 = pair2Reserve2.data as BigNumber
 
-            if (!amountIn1?.eq(0) || !amountIn2?.eq(0)) {
+            if (!amountIn1?.eq?.(0) || !amountIn2?.eq?.(0)) {
 
-                if (amountIn1?.gt(amountIn2)) {
-                    setPrice(Number(amountIn1?.div(amountIn2)?.toString()))
+                if (amountIn1?.gt?.(amountIn2)) {
+                    setPrice(Number(amountIn1?.div?.(amountIn2)?.toString()))
                 } else {
-                    setPrice(1 / Number(amountIn2?.div(amountIn1)?.toString()))
+                    setPrice(1 / Number(amountIn2?.div?.(amountIn1)?.toString()))
                 }
 
                 setValidPrice(true)
